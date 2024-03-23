@@ -1,0 +1,4 @@
+id,employer,status,description,url,created_at
+1,Company A,APPLIED,text,http://example.com,2024-03-23 16:19:07.463702+03:00
+2,Company A,REJECT,,,2024-03-23 16:19:07.463702+03:00
+3,Company A,STALE,,,2024-03-23 16:19:07.463702+03:00
