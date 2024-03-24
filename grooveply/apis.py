@@ -4,7 +4,7 @@ from typing import Optional
 import pendulum
 from pendulum import DateTime
 
-from .models import Application, ApplicationStatus, Automation, Employer
+from .models import Application, ApplicationStatus, Automation, Employer, TimePeriod
 from .settings import DB_NAME, TZ
 
 
@@ -27,13 +27,7 @@ class EmployerAPI:
 
 class ApplicationAPI:
     @classmethod
-    def create(
-        cls,
-        employer_id: int,
-        status_id: int,
-        description: str,
-        url: str
-    ) -> int:
+    def create(cls, employer_id: int, status_id: int, description: str, url: str) -> int:
         now = pendulum.now(tz=TZ)
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
@@ -140,33 +134,27 @@ class ApplicationStatusAPI:
 
         return ApplicationStatus(id=id, name=data[0])
 
-    @classmethod
-    def get_by_name(self, name: str) -> ApplicationStatus:
-        con = sqlite3.connect(DB_NAME)
-        cur = con.cursor()
-        cur.execute("SELECT id from application_status WHERE name = ?", (name,))
-        data = cur.fetchall()[0]
-
-        return ApplicationStatus(id=data[0], name=name)
-
 
 class AutomationAPI:
     @classmethod
-    def create(self, auto: Automation) -> int:
+    def create(
+        self, if_status_is_id: int, change_status_to_id: int, after: int, period: TimePeriod
+    ) -> int:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
 
+        now = pendulum.now(tz=TZ)
         cur.execute(
             "INSERT INTO automation "
             "(if_status_is, change_status_to, after, period, created_at) VALUES"
             " (?, ?, ?, ?, ?)"
             " RETURNING id",
             (
-                auto.if_status_is.id,
-                auto.change_status_to.id,
-                auto.after,
-                auto.period,
-                auto.created_at,
+                if_status_is_id,
+                change_status_to_id,
+                after,
+                period,
+                now,
             ),
         )
         auto_id = cur.fetchall()[0][0]

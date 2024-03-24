@@ -1,6 +1,6 @@
+import sqlite3
 from typing import Annotated
 
-import pendulum
 from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
@@ -9,9 +9,9 @@ from fastui.events import GoToEvent
 from fastui.forms import fastui_form
 from pydantic import BaseModel
 
-from ..apis import ApplicationStatusAPI, AutomationAPI
-from ..models import ApplicationStatusName, Automation, TimePeriod
-from ..settings import TZ
+from ..apis import AutomationAPI
+from ..models import ApplicationStatusName, TimePeriod
+from ..settings import DB_NAME
 from ..utils import page
 
 
@@ -36,17 +36,15 @@ router = APIRouter()
 
 @router.post("/create", response_model=FastUI, response_model_exclude_none=True)
 def automation_create(form: Annotated[AutomationForm, fastui_form(AutomationForm)]):
-    if_status_is = ApplicationStatusAPI.get_by_name(form.if_status_is)
-    change_status_to = ApplicationStatusAPI.get_by_name(form.change_status_to)
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute("SELECT id from application_status WHERE name = ?", (form.if_status_is,))
+    if_status_is_id = cur.fetchall()[0][0]
 
-    a = Automation(
-        if_status_is=if_status_is,
-        change_status_to=change_status_to,
-        after=form.after,
-        period=form.period,
-        created_at=str(pendulum.now(tz=TZ)),
-    )
-    AutomationAPI.create(a)
+    cur.execute("SELECT id from application_status WHERE name = ?", (form.change_status_to,))
+    change_status_to_id = cur.fetchall()[0][0]
+
+    AutomationAPI.create(if_status_is_id, change_status_to_id, form.after, form.period)
     return [c.FireEvent(event=GoToEvent(url="/automation/"))]
 
 
