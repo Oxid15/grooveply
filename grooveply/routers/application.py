@@ -10,8 +10,9 @@ from fastui.events import BackEvent, GoToEvent
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, Field, create_model
 
-from ..apis import ApplicationAPI, EmployerAPI
-from ..models import Application, ApplicationStatus, ApplicationStatusName
+from ..apis.application import ApplicationAPI
+from ..apis.employer import EmployerAPI
+from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
 from ..utils import page
 

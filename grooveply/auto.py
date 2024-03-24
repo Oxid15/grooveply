@@ -2,7 +2,7 @@ import sqlite3
 
 import pendulum
 
-from .apis import AutomationAPI
+from .apis.automation import AutomationAPI
 from .settings import DB_NAME, TZ
 
 

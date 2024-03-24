@@ -9,7 +9,7 @@ from fastui.events import GoToEvent
 from fastui.forms import fastui_form
 from pydantic import BaseModel
 
-from ..apis import AutomationAPI
+from ..apis.automation import AutomationAPI
 from ..models import ApplicationStatusName, TimePeriod
 from ..settings import DB_NAME
 from ..utils import page

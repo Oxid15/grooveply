@@ -1,6 +1,5 @@
 from typing import Literal, Optional
 
-from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 
 ApplicationStatusName = Literal[
