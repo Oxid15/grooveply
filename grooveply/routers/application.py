@@ -1,3 +1,4 @@
+import sqlite3
 from typing import Annotated, Optional
 
 import pendulum
@@ -9,9 +10,9 @@ from fastui.events import BackEvent, GoToEvent
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, Field, create_model
 
-from ..apis import ApplicationAPI
-from ..models import Application, ApplicationStatus, ApplicationStatusName, Employer
-from ..settings import TZ
+from ..apis import ApplicationAPI, EmployerAPI
+from ..models import Application, ApplicationStatus, ApplicationStatusName
+from ..settings import DB_NAME, TZ
 from ..utils import page
 
 
@@ -41,15 +42,18 @@ router = APIRouter()
 
 @router.post("/create", response_model=FastUI, response_model_exclude_none=True)
 def application_create(form: Annotated[ApplicationForm, fastui_form(ApplicationForm)]):
-    a = Application(
-        employer=Employer(name=form.employer_name),
-        status=ApplicationStatus(name=form.app_status_name),
-        description=form.description,
-        url=form.url,
-        created_at=str(pendulum.now(tz=TZ)),
-        status_updated_at=str(pendulum.now(tz=TZ)),
+    # Creating even if exists, retrieving id anyway
+    employer_id = EmployerAPI.create(form.employer)
+
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+
+    cur.execute(
+        "SELECT id FROM application_status" " WHERE name = ?", (form.status,)
     )
-    ApplicationAPI.create(a)
+    status_id = cur.fetchall()[0][0]
+
+    ApplicationAPI.create(employer_id, status_id, form.description, form.url)
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 
@@ -57,19 +61,21 @@ def application_create(form: Annotated[ApplicationForm, fastui_form(ApplicationF
 def application_update(
     id, form: Annotated[ApplicationUpdateForm, fastui_form(ApplicationUpdateForm)]
 ):
-    app = ApplicationAPI.get(id)
-    if form.app_status_name != app.status.name:
-        status_updated_at = str(pendulum.now(tz=TZ))
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+
+    cur.execute("SELECT id FROM application_status" " WHERE name = ?", (form.app_status_name,))
+    new_status_id = cur.fetchall()[0][0]
+
+    cur.execute("SELECT status_id from application WHERE id = ?", (id,))
+    old_status_id = cur.fetchall()[0][0]
+
+    if new_status_id != old_status_id:
+        status_updated_at = pendulum.now(tz=TZ)
     else:
         status_updated_at = None
 
-    a = Application(
-        status=ApplicationStatus(name=form.app_status_name),
-        description=form.description,
-        url=form.url,
-        status_updated_at=status_updated_at,
-    )
-    ApplicationAPI.update(id, a)
+    ApplicationAPI.update(id, new_status_id, status_updated_at, form.description, form.url)
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 

@@ -1,36 +1,16 @@
 import sqlite3
-from abc import ABC
-from typing import Any
+from typing import Optional
+
+import pendulum
+from pendulum import DateTime
 
 from .models import Application, ApplicationStatus, Automation, Employer
-from .settings import DB_NAME
+from .settings import DB_NAME, TZ
 
 
-class BaseAPI(ABC):
+class EmployerAPI:
     @classmethod
-    def create(cls, obj: Any):
-        raise NotImplementedError()
-
-    @classmethod
-    def get(cls, id: int):
-        raise NotImplementedError()
-
-    @classmethod
-    def update(cls, id: int, obj: Any):
-        raise NotImplementedError()
-
-    @classmethod
-    def delete(cls, id: int):
-        raise NotImplementedError()
-
-    @classmethod
-    def get_all(cls):
-        raise NotImplementedError()
-
-
-class EmployerAPI(BaseAPI):
-    @classmethod
-    def create(cls, obj: Employer) -> int:
+    def create(cls, name: str) -> int:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
@@ -38,32 +18,31 @@ class EmployerAPI(BaseAPI):
             " (?)"
             " ON CONFLICT (name) DO UPDATE set name = excluded.name"
             " RETURNING id",
-            (obj.name,),
+            (name,),
         )
         new_id = cur.fetchall()[0][0]
         con.commit()
         return new_id
 
 
-class ApplicationAPI(BaseAPI):
+class ApplicationAPI:
     @classmethod
-    def create(cls, obj: Application) -> int:
-        employer_id = EmployerAPI.create(obj.employer)
-
+    def create(
+        cls,
+        employer_id: int,
+        status_id: int,
+        description: str,
+        url: str
+    ) -> int:
+        now = pendulum.now(tz=TZ)
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
-
-        cur.execute(
-            "SELECT id FROM application_status" " WHERE name = ?", (obj.status.name,)
-        )
-        status_id = cur.fetchall()[0][0]
-
         cur.execute(
             "INSERT INTO application "
             "(employer_id, status_id, description, url, status_updated_at, created_at) VALUES"
             " (?, ?, ?, ?, ?, ?)"
             " RETURNING id",
-            (employer_id, status_id, obj.description, obj.url, obj.status_updated_at, obj.created_at),
+            (employer_id, status_id, description, url, str(now), str(now)),
         )
         app_id = cur.fetchall()[0][0]
         con.commit()
@@ -98,14 +77,16 @@ class ApplicationAPI(BaseAPI):
         return app
 
     @classmethod
-    def update(self, id: int, obj: Application):
+    def update(
+        self,
+        id: int,
+        status_id: Optional[int],
+        status_updated_at: Optional[DateTime],
+        description: Optional[str],
+        url: Optional[str],
+    ):
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
-
-        cur.execute(
-            "SELECT id FROM application_status" " WHERE name = ?", (obj.status.name,)
-        )
-        status_id = cur.fetchall()[0][0]
 
         cur.execute(
             """
@@ -116,7 +97,7 @@ class ApplicationAPI(BaseAPI):
             url = COALESCE(?, url)
             WHERE id = ?;
             """,
-            (status_id, obj.status_updated_at, obj.description, obj.url, id),
+            (status_id, status_updated_at, description, url, id),
         )
         con.commit()
 
@@ -149,7 +130,7 @@ class ApplicationAPI(BaseAPI):
         return results
 
 
-class ApplicationStatusAPI(BaseAPI):
+class ApplicationStatusAPI:
     @classmethod
     def get(self, id: int) -> ApplicationStatus:
         con = sqlite3.connect(DB_NAME)
@@ -169,7 +150,7 @@ class ApplicationStatusAPI(BaseAPI):
         return ApplicationStatus(id=data[0], name=name)
 
 
-class AutomationAPI(BaseAPI):
+class AutomationAPI:
     @classmethod
     def create(self, auto: Automation) -> int:
         con = sqlite3.connect(DB_NAME)
