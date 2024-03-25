@@ -4,12 +4,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI, prebuilt_html
 
-from .auto import update_statuses
-from .db import create_tables
-from .routers.application import router as application_router
-from .routers.automation import router as automation_router
-from .routers.location import router as location_router
-from .utils import page
+from grooveply.auto import update_statuses
+from grooveply.db import create_tables
+from grooveply.routers.application import router as application_router
+from grooveply.routers.automation import router as automation_router
+from grooveply.routers.location import router as location_router
+from grooveply.utils import page
 
 app = FastAPI(debug=True)
 create_tables()
