@@ -19,16 +19,21 @@ class Employer(BaseModel):
     name: str
 
 
-# TODO: think about how to adapt a model for
-# doing updates and not having everythin optional
+class Location(BaseModel):
+    id: int
+    name: str
+    created_at: str
+
+
 class Application(BaseModel):
-    id: Optional[int] = None
-    employer: Optional[Employer] = None
-    status: Optional[ApplicationStatus] = None
+    id: int
+    employer: Employer
+    status: ApplicationStatus
+    location_name: Optional[str] = None
     description: Optional[str] = None
     url: Optional[str] = None
-    status_updated_at: Optional[str] = None
-    created_at: Optional[str] = None
+    status_updated_at: str
+    created_at: str
 
 
 class Automation(BaseModel):
@@ -38,9 +43,3 @@ class Automation(BaseModel):
     after: Optional[int] = None
     period: Optional[TimePeriod] = None
     created_at: Optional[str] = None
-
-
-class Location(BaseModel):
-    id: int
-    name: str
-    created_at: str

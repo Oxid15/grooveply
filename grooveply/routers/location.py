@@ -1,11 +1,12 @@
 from typing import Annotated
 
+from fastapi import Request
 from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup
 from fastui.events import GoToEvent
-from fastui.forms import fastui_form
+from fastui.forms import SelectSearchResponse, fastui_form
 from pydantic import BaseModel
 
 from ..apis.location import LocationAPI
@@ -68,3 +69,9 @@ def applications() -> list[AnyComponent]:
         ]
 
     return page("Locations", components)
+
+
+@router.get('/search', response_model=SelectSearchResponse)
+async def search_view(request: Request, q: str) -> SelectSearchResponse:
+    locations = LocationAPI.get_all()
+    return SelectSearchResponse(options=[{"value": loc.name, "label": loc.name} for loc in locations])

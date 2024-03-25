@@ -10,6 +10,7 @@ def create_tables():
         "CREATE TABLE IF NOT EXISTS application("
         "id INTEGER PRIMARY KEY NOT NULL,"
         "employer_id BIGINT NOT NULL,"
+        "location_id BIGINT,"
         "status_id BIGINT NOT NULL,"
         "status_updated_at TEXT NOT NULL,"
         "description TEXT,"
