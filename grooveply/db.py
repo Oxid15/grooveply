@@ -54,4 +54,12 @@ def create_tables():
         ")"
     )
 
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS location("
+        "id INTEGER PRIMARY KEY NOT NULL,"
+        "name TEXT UNIQUE NOT NULL,"
+        "created_at TEXT NOT NULL"
+        ")"
+    )
+
     con.commit()

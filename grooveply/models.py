@@ -1,5 +1,6 @@
 from typing import Literal, Optional
 
+from pendulum import DateTime
 from pydantic import BaseModel
 
 ApplicationStatusName = Literal[
@@ -37,3 +38,9 @@ class Automation(BaseModel):
     after: Optional[int] = None
     period: Optional[TimePeriod] = None
     created_at: Optional[str] = None
+
+
+class Location(BaseModel):
+    id: int
+    name: str
+    created_at: str

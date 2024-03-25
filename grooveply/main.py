@@ -8,6 +8,7 @@ from .auto import update_statuses
 from .db import create_tables
 from .routers.application import router as application_router
 from .routers.automation import router as automation_router
+from .routers.location import router as location_router
 from .utils import page
 
 app = FastAPI(debug=True)
@@ -25,6 +26,7 @@ def main_page() -> list[AnyComponent]:
 app.include_router(router, prefix="/api")
 app.include_router(application_router, prefix="/api/application")
 app.include_router(automation_router, prefix="/api/automation")
+app.include_router(location_router, prefix="/api/location")
 
 
 @app.get("/{path:path}")
