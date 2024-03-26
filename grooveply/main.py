@@ -8,6 +8,7 @@ from grooveply.auto import update_statuses
 from grooveply.db import create_tables
 from grooveply.routers.application import router as application_router
 from grooveply.routers.automation import router as automation_router
+from grooveply.routers.job_board import router as job_board_router
 from grooveply.routers.location import router as location_router
 from grooveply.utils import page
 
@@ -26,6 +27,7 @@ def main_page() -> list[AnyComponent]:
 app.include_router(router, prefix="/api")
 app.include_router(application_router, prefix="/api/application")
 app.include_router(automation_router, prefix="/api/automation")
+app.include_router(job_board_router, prefix="/api/job_board")
 app.include_router(location_router, prefix="/api/location")
 
 

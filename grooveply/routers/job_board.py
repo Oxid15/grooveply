@@ -1,48 +1,49 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Request
 from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
-from fastui.components.display import DisplayLookup
+from fastui.components.display import DisplayLookup, DisplayMode
 from fastui.events import GoToEvent
 from fastui.forms import SelectSearchResponse, fastui_form
 from pydantic import BaseModel
 
-from ..apis.location import LocationAPI
+from ..apis.job_board import JobBoardAPI
 from ..utils import page
 
 
-class LocationForm(BaseModel):
+class JobBoardForm(BaseModel):
     name: str
+    url: Optional[str]
 
 
 router = APIRouter()
 
 
 @router.post("/create", response_model=FastUI, response_model_exclude_none=True)
-def location_create(form: Annotated[LocationForm, fastui_form(LocationForm)]):
-    LocationAPI.create(name=form.name)
-    return [c.FireEvent(event=GoToEvent(url="/location/"))]
+def create(form: Annotated[JobBoardForm, fastui_form(JobBoardForm)]):
+    JobBoardAPI.create(name=form.name, url=form.url)
+    return [c.FireEvent(event=GoToEvent(url="/job_board/"))]
 
 
 @router.get("/create-form", response_model=FastUI, response_model_exclude_none=True)
-def location_create_form() -> list[AnyComponent]:
+def create_form() -> list[AnyComponent]:
     return page(
-        "New Location",
+        "New Job Board",
         [
             c.ModelForm(
-                model=LocationForm,
+                model=JobBoardForm,
                 display_mode="page",
-                submit_url="/api/location/create",
+                submit_url="/api/job_board/create",
             ),
         ],
     )
 
 
 @router.get("/", response_model=FastUI, response_model_exclude_none=True)
-def applications() -> list[AnyComponent]:
-    data = LocationAPI.get_all()
+def table() -> list[AnyComponent]:
+    data = JobBoardAPI.get_all()
 
     components = [
         c.Link(
@@ -58,7 +59,8 @@ def applications() -> list[AnyComponent]:
                 columns=[
                     DisplayLookup(field="id", on_click=GoToEvent(url="{id}")),
                     DisplayLookup(field="name"),
-                    DisplayLookup(field="created_at"),
+                    DisplayLookup(field="url"),
+                    DisplayLookup(field="created_at", mode=DisplayMode.date),
                 ],
             ),
         ]
@@ -66,7 +68,9 @@ def applications() -> list[AnyComponent]:
     return page("Locations", components)
 
 
-@router.get('/search', response_model=SelectSearchResponse)
+@router.get("/search", response_model=SelectSearchResponse)
 async def search_view(request: Request, q: str) -> SelectSearchResponse:
-    locations = LocationAPI.get_all()
-    return SelectSearchResponse(options=[{"value": loc.name, "label": loc.name} for loc in locations])
+    job_boards = JobBoardAPI.get_all()
+    return SelectSearchResponse(
+        options=[{"value": item.name, "label": item.name} for item in job_boards]
+    )

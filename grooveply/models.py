@@ -25,6 +25,13 @@ class Location(BaseModel):
     created_at: str
 
 
+class JobBoard(BaseModel):
+    id: int
+    name: str
+    url: Optional[str]
+    created_at: str
+
+
 class Application(BaseModel):
     id: int
     employer: Employer

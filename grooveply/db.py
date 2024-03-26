@@ -63,4 +63,13 @@ def create_tables():
         ")"
     )
 
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS job_board("
+        "id INTEGER PRIMARY KEY NOT NULL,"
+        "name TEXT UNIQUE NOT NULL,"
+        "url TEXT UNIQUE,"
+        "created_at TEXT NOT NULL"
+        ")"
+    )
+
     con.commit()
