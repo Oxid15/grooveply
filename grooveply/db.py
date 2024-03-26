@@ -11,6 +11,7 @@ def create_tables():
         "id INTEGER PRIMARY KEY NOT NULL,"
         "employer_id BIGINT NOT NULL,"
         "location_id BIGINT,"
+        "job_board_id BIGINT,"
         "status_id BIGINT NOT NULL,"
         "status_updated_at TEXT NOT NULL,"
         "description TEXT,"

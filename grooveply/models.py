@@ -37,6 +37,7 @@ class Application(BaseModel):
     employer: Employer
     status: ApplicationStatus
     location_name: Optional[str] = None
+    job_board_name: Optional[str] = None
     description: Optional[str] = None
     url: Optional[str] = None
     status_updated_at: str

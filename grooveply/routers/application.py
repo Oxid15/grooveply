@@ -5,7 +5,7 @@ import pendulum
 from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
-from fastui.components.display import DisplayLookup
+from fastui.components.display import DisplayLookup, DisplayMode
 from fastui.events import BackEvent, GoToEvent
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, Field, create_model
@@ -23,6 +23,7 @@ class ApplicationForm(BaseModel):
     description: Annotated[str | None, Textarea(rows=5)] = Field(None)
     url: Optional[str] = None
     location: Optional[str] = Field(None, json_schema_extra={'search_url': '/api/location/search'})
+    job_board: Optional[str] = Field(None, json_schema_extra={'search_url': '/api/job_board/search'})
 
 
 class ApplicationUpdateForm(BaseModel):
@@ -36,6 +37,7 @@ class ApplicationRow(BaseModel):
     status: str
     employer: str
     location: Optional[str]
+    job_board: Optional[str]
     description: Optional[str] = None
     created_at: str
 
@@ -64,7 +66,15 @@ def application_create(form: Annotated[ApplicationForm, fastui_form(ApplicationF
     else:
         location_id = None
 
-    ApplicationAPI.create(employer_id, status_id, location_id, form.description, form.url)
+    if form.job_board is not None:
+        cur.execute(
+            "SELECT id FROM job_board WHERE name = ?", (form.job_board,)
+        )
+        job_board_id = cur.fetchall()[0][0]
+    else:
+        job_board_id = None
+
+    ApplicationAPI.create(employer_id, status_id, location_id, job_board_id, form.description, form.url)
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 
@@ -130,9 +140,8 @@ def application_update_form(id) -> list[AnyComponent]:
 @router.get("/{id}", response_model=FastUI, response_model_exclude_none=True)
 def application_get(id) -> list[AnyComponent]:
     app = ApplicationAPI.get(id)
-    return page(
-        "Application",
-        [
+
+    components = [
             c.Heading(text=f"Application to {app.employer.name}", level=2),
             c.Button(text="Back", on_click=BackEvent()),
             c.Link(
@@ -142,11 +151,22 @@ def application_get(id) -> list[AnyComponent]:
             c.Paragraph(text=f"Created: {app.created_at}"),
             c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
             c.Paragraph(text=app.description if app.description else "No description"),
-            c.Link(
+        ]
+
+    if app.url:
+        components.append(c.Link(
                 components=[c.Text(text=app.url if app.url else "No url")],
                 on_click=GoToEvent(url=app.url),
-            ),
-        ],
+            ))
+    if app.location_name:
+        components.append(c.Paragraph(text=f"Located in: {app.location_name}"))
+
+    if app.job_board_name:
+        components.append(c.Paragraph(text=f"Applied on: {app.job_board_name}"))
+
+    return page(
+        "Application",
+        components
     )
 
 
@@ -165,6 +185,7 @@ def applications(status: str | None = None) -> list[AnyComponent]:
             status=app.status.name,
             employer=app.employer.name,
             location=app.location_name,
+            job_board=app.job_board_name,
             description=app.description,
             created_at=pendulum.parse(app.created_at).diff_for_humans(pendulum.now(tz=TZ)),
         )
@@ -196,7 +217,8 @@ def applications(status: str | None = None) -> list[AnyComponent]:
                     DisplayLookup(field="status"),
                     DisplayLookup(field="employer"),
                     DisplayLookup(field="location"),
-                    DisplayLookup(field="created_at"),
+                    DisplayLookup(field="job_board"),
+                    DisplayLookup(field="created_at", mode=DisplayMode.date),
                     DisplayLookup(field="description"),
                 ],
             ),

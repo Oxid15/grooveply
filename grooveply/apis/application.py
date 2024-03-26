@@ -21,17 +21,35 @@ class ApplicationStatusAPI:
 
 class ApplicationAPI:
     @classmethod
-    def create(cls, employer_id: int, status_id: int, location_id: Optional[int], description: str, url: str) -> int:
+    def create(
+        cls,
+        employer_id: int,
+        status_id: int,
+        location_id: Optional[int],
+        job_board_id: Optional[int],
+        description: str,
+        url: str,
+    ) -> int:
         now = pendulum.now(tz=TZ)
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
-            "INSERT INTO application "
-            "(employer_id, status_id, location_id,"
+            "INSERT INTO application"
+            " (employer_id, status_id, location_id,"
+            " job_board_id,"
             " description, url, status_updated_at, created_at) VALUES"
-            " (?, ?, ?, ?, ?, ?, ?)"
+            " (?, ?, ?, ?, ?, ?, ?, ?)"
             " RETURNING id",
-            (employer_id, status_id, location_id, description, url, str(now), str(now)),
+            (
+                employer_id,
+                status_id,
+                location_id,
+                job_board_id,
+                description,
+                url,
+                str(now),
+                str(now),
+            ),
         )
         app_id = cur.fetchall()[0][0]
         con.commit()
@@ -42,7 +60,7 @@ class ApplicationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
-            "SELECT app.id, emp.name, status.name, loc.name, app.description,"
+            "SELECT app.id, emp.name, status.name, loc.name, jb.name, app.description,"
             " app.url,"
             " app.status_updated_at, app.created_at"
             " FROM application app"
@@ -51,6 +69,8 @@ class ApplicationAPI:
             " ON app.status_id = status.id"
             " LEFT JOIN location loc"
             " ON app.location_id = loc.id"
+            " LEFT JOIN job_board jb"
+            " ON app.job_board_id = jb.id"
             " WHERE app.id = ?",
             (id,),
         )
@@ -61,10 +81,11 @@ class ApplicationAPI:
             employer=Employer(name=data[1]),
             status=ApplicationStatus(name=data[2]),
             location_name=data[3],
-            description=data[4],
-            url=data[5],
-            status_updated_at=data[6],
-            created_at=data[7],
+            job_board_name=data[4],
+            description=data[5],
+            url=data[6],
+            status_updated_at=data[7],
+            created_at=data[8],
         )
         return app
 
@@ -99,6 +120,7 @@ class ApplicationAPI:
         cur = con.cursor()
         cur.execute(
             "SELECT app.id, emp.name, status.name, loc.name, "
+            " jb.name,"
             " app.description, app.url, app.status_updated_at, app.created_at"
             " FROM application app"
             " JOIN employer emp ON app.employer_id = emp.id"
@@ -106,6 +128,8 @@ class ApplicationAPI:
             " ON app.status_id = status.id"
             " LEFT JOIN location loc"
             " ON app.location_id = loc.id"
+            " LEFT JOIN job_board jb"
+            " ON app.job_board_id = jb.id"
             " ORDER BY app.created_at DESC"
         )
         data = cur.fetchall()
@@ -118,10 +142,11 @@ class ApplicationAPI:
                     employer=Employer(name=app[1]),
                     status=ApplicationStatus(name=app[2]),
                     location_name=app[3],
-                    description=app[4],
-                    url=app[5],
-                    status_updated_at=app[6],
-                    created_at=app[7],
+                    job_board_name=app[4],
+                    description=app[5],
+                    url=app[6],
+                    status_updated_at=app[7],
+                    created_at=app[8],
                 )
             )
         return results
