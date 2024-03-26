@@ -115,6 +115,14 @@ class ApplicationAPI:
         con.commit()
 
     @classmethod
+    def delete(self, id: int):
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+
+        cur.execute("DELETE FROM application WHERE id = ?", (id,))
+        con.commit()
+
+    @classmethod
     def get_all(cls) -> list[Application]:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
