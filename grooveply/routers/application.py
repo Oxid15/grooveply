@@ -109,6 +109,7 @@ def application_create_form() -> list[AnyComponent]:
     return page(
         "New Application",
         [
+            c.Button(text="Back", on_click=BackEvent()),
             c.ModelForm(
                 model=ApplicationForm,
                 display_mode="page",
@@ -130,6 +131,7 @@ def application_update_form(id) -> list[AnyComponent]:
     return [
         c.Page(
             components=[
+                c.Button(text="Back", on_click=BackEvent()),
                 c.Heading(text=f"Edit Application for {app.employer.name}", level=2),
                 c.ModelForm(
                     model=update_form,
@@ -147,7 +149,6 @@ def application_get(id) -> list[AnyComponent]:
 
     components = [
         c.Heading(text=f"Application to {app.employer.name}", level=2),
-        c.Button(text="Back", on_click=BackEvent()),
         c.Link(
             components=[c.Button(text="Edit", named_style="secondary")],
             on_click=GoToEvent(url=f"/application/update-form/{id}"),

@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup
-from fastui.events import GoToEvent
+from fastui.events import BackEvent, GoToEvent
 from fastui.forms import fastui_form
 from pydantic import BaseModel
 
@@ -35,7 +35,7 @@ router = APIRouter()
 
 
 @router.post("/create", response_model=FastUI, response_model_exclude_none=True)
-def automation_create(form: Annotated[AutomationForm, fastui_form(AutomationForm)]):
+def create(form: Annotated[AutomationForm, fastui_form(AutomationForm)]):
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
     cur.execute("SELECT id from application_status WHERE name = ?", (form.if_status_is,))
@@ -49,10 +49,11 @@ def automation_create(form: Annotated[AutomationForm, fastui_form(AutomationForm
 
 
 @router.get("/create-form", response_model=FastUI, response_model_exclude_none=True)
-def automation_create_form() -> list[AnyComponent]:
+def create_form() -> list[AnyComponent]:
     return page(
         "New Automation",
         [
+            c.Button(text="Back", on_click=BackEvent()),
             c.ModelForm(
                 model=AutomationForm,
                 display_mode="page",

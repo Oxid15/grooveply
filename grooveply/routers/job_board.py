@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup, DisplayMode
-from fastui.events import GoToEvent
+from fastui.events import BackEvent, GoToEvent
 from fastui.forms import SelectSearchResponse, fastui_form
 from pydantic import BaseModel
 
@@ -32,6 +32,7 @@ def create_form() -> list[AnyComponent]:
     return page(
         "New Job Board",
         [
+            c.Button(text="Back", on_click=BackEvent()),
             c.ModelForm(
                 model=JobBoardForm,
                 display_mode="page",

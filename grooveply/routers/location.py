@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup
-from fastui.events import GoToEvent
+from fastui.events import BackEvent, GoToEvent
 from fastui.forms import SelectSearchResponse, fastui_form
 from pydantic import BaseModel
 
@@ -31,6 +31,7 @@ def location_create_form() -> list[AnyComponent]:
     return page(
         "New Location",
         [
+            c.Button(text="Back", on_click=BackEvent()),
             c.ModelForm(
                 model=LocationForm,
                 display_mode="page",
