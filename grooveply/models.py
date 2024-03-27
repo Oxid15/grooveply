@@ -15,6 +15,14 @@ class ApplicationStatus(BaseModel):
     name: ApplicationStatusName = "APPLIED"
 
 
+class ApplicationUpdate(BaseModel):
+    id: int
+    description: str
+    created_at: str
+    triggerer_type: str
+    triggerer_id: int
+
+
 class Employer(BaseModel):
     name: str
 

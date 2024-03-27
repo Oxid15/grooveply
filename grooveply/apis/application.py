@@ -4,7 +4,7 @@ from typing import Optional
 import pendulum
 from pendulum import DateTime
 
-from ..models import Application, ApplicationStatus, Employer
+from ..models import Application, ApplicationStatus, ApplicationUpdate, Employer
 from ..settings import DB_NAME, TZ
 
 
@@ -17,6 +17,34 @@ class ApplicationStatusAPI:
         data = cur.fetchall()[0]
 
         return ApplicationStatus(id=id, name=data[0])
+
+
+class ApplicationUpdateAPI:
+    @classmethod
+    def get_all(self, app_id: int) -> list[ApplicationUpdate]:
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT au.id, description, au.created_at, triggerer_type, triggerer_id"
+            " FROM application_update au"
+            " JOIN application_to_update atu ON au.id = atu.update_id"
+            " WHERE atu.application_id = ?"
+            " ORDER BY created_at ASC",
+            (app_id,),
+        )
+        data = cur.fetchall()
+        updates = []
+        for tup in data:
+            updates.append(
+                ApplicationUpdate(
+                    id=tup[0],
+                    description=tup[1],
+                    created_at=tup[2],
+                    triggerer_type=tup[3],
+                    triggerer_id=tup[4],
+                )
+            )
+        return updates
 
 
 class ApplicationAPI:

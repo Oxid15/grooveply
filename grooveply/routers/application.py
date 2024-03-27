@@ -10,7 +10,7 @@ from fastui.events import BackEvent, GoToEvent, PageEvent
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, Field, create_model
 
-from ..apis.application import ApplicationAPI
+from ..apis.application import ApplicationAPI, ApplicationUpdateAPI
 from ..apis.employer import EmployerAPI
 from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
@@ -143,12 +143,24 @@ def application_update_form(id) -> list[AnyComponent]:
     ]
 
 
-@router.get("/{id}", response_model=FastUI, response_model_exclude_none=True)
-def application_get(id) -> list[AnyComponent]:
-    app = ApplicationAPI.get(id)
-
-    components = [
-        c.Heading(text=f"Application to {app.employer.name}", level=2),
+def application_header(id: int, name: str):
+    return [
+        c.Heading(text=f"Application to {name}", level=2),
+        c.LinkList(
+            links=[
+                c.Link(
+                    components=[c.Text(text="Details")],
+                    on_click=GoToEvent(url=f"/application/{id}/details"),
+                    active=f"startswith:/application/{id}/details",
+                ),
+                c.Link(
+                    components=[c.Text(text="Updates")],
+                    on_click=GoToEvent(url=f"/application/{id}/updates"),
+                    active=f"startswith:/application/{id}/updates",
+                ),
+            ],
+            mode="tabs",
+        ),
         c.Link(
             components=[c.Button(text="Edit", named_style="secondary")],
             on_click=GoToEvent(url=f"/application/update-form/{id}"),
@@ -178,12 +190,25 @@ def application_get(id) -> list[AnyComponent]:
                             named_style="secondary",
                             on_click=PageEvent(name="del-confirmation", clear=True),
                         ),
-                        c.Button(text="Delete", named_style="warning", on_click=PageEvent(name="del-confirmation-submit")),
+                        c.Button(
+                            text="Delete",
+                            named_style="warning",
+                            on_click=PageEvent(name="del-confirmation-submit"),
+                        ),
                     ],
                     open_trigger=PageEvent(name="del-confirmation"),
                 ),
             ]
         ),
+    ]
+
+
+@router.get("/{id}/details", response_model=FastUI, response_model_exclude_none=True)
+def application_details(id) -> list[AnyComponent]:
+    app = ApplicationAPI.get(id)
+
+    components = [
+        *application_header(id, app.employer.name),
         c.Paragraph(text=f"Created: {app.created_at}"),
         c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
         c.Paragraph(text=app.description if app.description else "No description"),
@@ -201,6 +226,32 @@ def application_get(id) -> list[AnyComponent]:
 
     if app.job_board_name:
         components.append(c.Paragraph(text=f"Applied on: {app.job_board_name}"))
+
+    return page("Application", components)
+
+
+@router.get("/{id}/updates", response_model=FastUI, response_model_exclude_none=True)
+def application_updates(id) -> list[AnyComponent]:
+    app = ApplicationAPI.get(id)
+
+    components = [
+        *application_header(id, app.employer.name),
+        c.Paragraph(text=f"Created: {app.created_at}"),
+        c.Paragraph(text=f"Status: {app.status.name}"),
+        c.Paragraph(text=app.description if app.description else "No description"),
+    ]
+
+    updates = ApplicationUpdateAPI.get_all(app.id)
+    if len(updates):
+        for upd in updates:
+            components.append(
+                c.Paragraph(text=f"{pendulum.parse(upd.created_at).diff_for_humans(pendulum.now())} |"
+                            f" {upd.triggerer_type.capitalize()}"
+                            f" ({upd.triggerer_id:0>2d}) {upd.description}"
+                            )
+            )
+    else:
+        components.append(c.Paragraph(text="No updates"))
 
     return page("Application", components)
 
@@ -248,7 +299,7 @@ def applications(status: str | None = None) -> list[AnyComponent]:
             c.Table(
                 data=data,
                 columns=[
-                    DisplayLookup(field="id", on_click=GoToEvent(url="{id}")),
+                    DisplayLookup(field="id", on_click=GoToEvent(url="{id}/details")),
                     DisplayLookup(field="status"),
                     DisplayLookup(field="employer"),
                     DisplayLookup(field="location"),
