@@ -1,5 +1,7 @@
 import sqlite3
 
+import pendulum
+
 from .settings import DB_NAME
 
 
@@ -71,6 +73,46 @@ def create_tables():
         "url TEXT UNIQUE,"
         "created_at TEXT NOT NULL"
         ")"
+    )
+
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS application_update("
+        "id INTEGER PRIMARY KEY NOT NULL,"
+        "description TEXT NOT NULL,"
+        "created_at TEXT NOT NULL,"
+        "triggerer_type VARCHAR NOT NULL,"
+        "triggerer_id VARCHAR NOT NULL"
+        ")"
+    )
+
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS application_to_update("
+        "id INTEGER PRIMARY KEY NOT NULL,"
+        "application_id INTEGER NOT NULL,"
+        "update_id INTEGER NOT NULL"
+        ")"
+    )
+
+    con.commit()
+
+
+def register_update(app_id: int, description: str, triggerer_type: str, triggerer_id: int):
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    now = str(pendulum.now())
+    cur.execute(
+        "INSERT INTO application_update"
+        " (description, created_at, triggerer_type, triggerer_id) VALUES"
+        " (?, ?, ?, ?)"
+        " RETURNING id",
+        (description, now, triggerer_type, triggerer_id)
+    )
+    inserted = cur.fetchall()[0][0]
+
+    cur.execute(
+        "INSERT INTO application_to_update"
+        " (application_id, update_id) VALUES (?, ?)",
+        (app_id, inserted)
     )
 
     con.commit()
