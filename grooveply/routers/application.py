@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, create_model
 
 from ..apis.application import ApplicationAPI, ApplicationUpdateAPI
 from ..apis.employer import EmployerAPI
+from ..db import register_update
 from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
 from ..utils import page
@@ -86,11 +87,17 @@ def application_update(
     cur.execute("SELECT id FROM application_status" " WHERE name = ?", (form.app_status_name,))
     new_status_id = cur.fetchall()[0][0]
 
-    cur.execute("SELECT status_id from application WHERE id = ?", (id,))
-    old_status_id = cur.fetchall()[0][0]
+    cur.execute("SELECT status_id, aps.name from application app"
+                " JOIN application_status aps"
+                " ON app.status_id = aps.id"
+                " WHERE app.id = ?", (id,))
+    old_status_id, old_status_name = cur.fetchall()[0]
 
     if new_status_id != old_status_id:
-        status_updated_at = pendulum.now(tz=TZ)
+        status_updated_at = str(pendulum.now(tz=TZ))
+        register_update(
+            id, f"Changed status {old_status_name} -> {form.app_status_name}", "user", 1
+        )
     else:
         status_updated_at = None
 
@@ -245,10 +252,11 @@ def application_updates(id) -> list[AnyComponent]:
     if len(updates):
         for upd in updates:
             components.append(
-                c.Paragraph(text=f"{pendulum.parse(upd.created_at).diff_for_humans(pendulum.now())} |"
-                            f" {upd.triggerer_type.capitalize()}"
-                            f" ({upd.triggerer_id:0>2d}) {upd.description}"
-                            )
+                c.Paragraph(
+                    text=f"{pendulum.parse(upd.created_at).diff_for_humans(pendulum.now())} |"
+                    f" {upd.triggerer_type.capitalize()}"
+                    f" ({upd.triggerer_id:0>2d}) {upd.description}"
+                )
             )
     else:
         components.append(c.Paragraph(text="No updates"))
