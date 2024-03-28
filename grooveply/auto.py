@@ -2,9 +2,9 @@ import sqlite3
 
 import pendulum
 
-from .apis.automation import AutomationAPI
-from .db import register_update
-from .settings import DB_NAME, TZ
+from grooveply.apis.automation import AutomationAPI
+from grooveply.db import register_update
+from grooveply.settings import DB_NAME, TZ
 
 
 def update_statuses():

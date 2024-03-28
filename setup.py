@@ -1,9 +1,13 @@
+import os
+
 import setuptools
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 setuptools.setup(
     name="grooveply",
     description="Simple Job Application Tracking App",
-    package_dir={"grooveply": "./grooveply"},
+    package_dir={"grooveply": os.path.join(SCRIPT_DIR, "grooveply")},
     entry_points={'console_scripts': ['grooveply = grooveply.main:main']},
     packages=setuptools.find_packages(),
     python_requires=">=3.10",
