@@ -256,7 +256,7 @@ def create_update_form(id):
         f"New Update {id}",
         [
             c.Button(text="Back", on_click=BackEvent()),
-            c.Heading(text=f"New Update", level=2),
+            c.Heading(text="New Update", level=2),
             c.ModelForm(
                 model=UpdateForm,
                 display_mode="page",
@@ -286,7 +286,7 @@ def application_updates(id) -> list[AnyComponent]:
         for upd in updates:
             components.append(
                 c.Paragraph(
-                    text=f"{pendulum.parse(upd.created_at).diff_for_humans(pendulum.now())} |"
+                    text=f"{upd.created_at} |"
                     f" {upd.triggerer_type.capitalize()}"
                     f" ({upd.triggerer_id:0>2d}) {upd.description}"
                 )
