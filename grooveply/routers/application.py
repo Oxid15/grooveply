@@ -45,6 +45,10 @@ class ApplicationRow(BaseModel):
     created_at: str
 
 
+class UpdateForm(BaseModel):
+    description: Annotated[str | None, Textarea(rows=5)]
+
+
 router = APIRouter()
 
 
@@ -87,10 +91,13 @@ def application_update(
     cur.execute("SELECT id FROM application_status" " WHERE name = ?", (form.app_status_name,))
     new_status_id = cur.fetchall()[0][0]
 
-    cur.execute("SELECT status_id, aps.name from application app"
-                " JOIN application_status aps"
-                " ON app.status_id = aps.id"
-                " WHERE app.id = ?", (id,))
+    cur.execute(
+        "SELECT status_id, aps.name from application app"
+        " JOIN application_status aps"
+        " ON app.status_id = aps.id"
+        " WHERE app.id = ?",
+        (id,),
+    )
     old_status_id, old_status_name = cur.fetchall()[0]
 
     if new_status_id != old_status_id:
@@ -168,16 +175,25 @@ def application_header(id: int, name: str):
             ],
             mode="tabs",
         ),
-        c.Link(
-            components=[c.Button(text="Edit", named_style="secondary")],
-            on_click=GoToEvent(url=f"/application/update-form/{id}"),
-        ),
+    ]
+
+
+@router.get("/{id}/details", response_model=FastUI, response_model_exclude_none=True)
+def application_details(id) -> list[AnyComponent]:
+    app = ApplicationAPI.get(id)
+
+    components = [
+        *application_header(id, app.employer.name),
         c.Link(
             components=[
                 c.Button(
                     text="Delete",
                     named_style="warning",
                     on_click=PageEvent(name="del-confirmation"),
+                ),
+                c.Link(
+                    components=[c.Button(text="Edit", named_style="secondary")],
+                    on_click=GoToEvent(url=f"/application/update-form/{id}"),
                 ),
                 c.Modal(
                     title="Delete",
@@ -207,15 +223,6 @@ def application_header(id: int, name: str):
                 ),
             ]
         ),
-    ]
-
-
-@router.get("/{id}/details", response_model=FastUI, response_model_exclude_none=True)
-def application_details(id) -> list[AnyComponent]:
-    app = ApplicationAPI.get(id)
-
-    components = [
-        *application_header(id, app.employer.name),
         c.Paragraph(text=f"Created: {app.created_at}"),
         c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
         c.Paragraph(text=app.description if app.description else "No description"),
@@ -237,6 +244,28 @@ def application_details(id) -> list[AnyComponent]:
     return page("Application", components)
 
 
+@router.post("/{id}/update/create-update", response_model=FastUI, response_model_exclude_none=True)
+def create_update(id: int, form: Annotated[UpdateForm, fastui_form(UpdateForm)]):
+    register_update(id, form.description, "user", 1)
+    return [c.FireEvent(event=GoToEvent(url=f"/application/{id}/updates"))]
+
+
+@router.get("/{id}/updates/create-update-form", response_model=FastUI, response_model_exclude_none=True)
+def create_update_form(id):
+    return page(
+        f"New Update {id}",
+        [
+            c.Button(text="Back", on_click=BackEvent()),
+            c.Heading(text=f"New Update", level=2),
+            c.ModelForm(
+                model=UpdateForm,
+                display_mode="page",
+                submit_url=f"/api/application/{id}/update/create-update",
+            ),
+        ],
+    )
+
+
 @router.get("/{id}/updates", response_model=FastUI, response_model_exclude_none=True)
 def application_updates(id) -> list[AnyComponent]:
     app = ApplicationAPI.get(id)
@@ -246,6 +275,10 @@ def application_updates(id) -> list[AnyComponent]:
         c.Paragraph(text=f"Created: {app.created_at}"),
         c.Paragraph(text=f"Status: {app.status.name}"),
         c.Paragraph(text=app.description if app.description else "No description"),
+        c.Link(
+            components=[c.Button(text="New")],
+            on_click=GoToEvent(url="create-update-form"),
+        ),
     ]
 
     updates = ApplicationUpdateAPI.get_all(app.id)
