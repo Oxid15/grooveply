@@ -4,7 +4,13 @@ from typing import Optional
 import pendulum
 from pendulum import DateTime
 
-from ..models import Application, ApplicationStatus, ApplicationUpdate, Employer
+from ..models import (
+    Application,
+    ApplicationStatus,
+    ApplicationUpdate,
+    Employer,
+    LatestUpdateRow,
+)
 from ..settings import DB_NAME, TZ
 
 
@@ -42,6 +48,37 @@ class ApplicationUpdateAPI:
                     created_at=tup[2],
                     triggerer_type=tup[3],
                     triggerer_id=tup[4],
+                )
+            )
+        return updates
+
+    @classmethod
+    def get_latest(self, limit: int) -> list[LatestUpdateRow]:
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT au.description, au.created_at, triggerer_type, triggerer_id,"
+            " atu.application_id, emp.name"
+            " FROM application_update au"
+            " JOIN application_to_update atu ON au.id = atu.update_id"
+            " JOIN application app"
+            " ON atu.application_id = app.id"
+            " JOIN employer emp"
+            " ON app.employer_id = emp.id"
+            " ORDER BY au.created_at DESC"
+            " LIMIT ?",
+            (limit,),
+        )
+        data = cur.fetchall()
+        updates = []
+        for tup in data:
+            updates.append(
+                LatestUpdateRow(
+                    description=tup[0],
+                    created_at=tup[1],
+                    triggerer=f"{tup[2]} {tup[3]}",
+                    application_id=tup[4],
+                    employer=tup[5],
                 )
             )
         return updates

@@ -21,6 +21,15 @@ class ApplicationUpdate(BaseModel):
     created_at: str
     triggerer_type: str
     triggerer_id: int
+    application_id: Optional[int] = None
+
+
+class LatestUpdateRow(BaseModel):
+    triggerer: str
+    application_id: int
+    employer: str
+    description: str
+    created_at: str
 
 
 class Employer(BaseModel):
