@@ -34,6 +34,25 @@ class AutomationAPI:
         return auto_id
 
     @classmethod
+    def get(self, id: int) -> Automation:
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT id, if_status_is, change_status_to, after, period, created_at"
+            " FROM automation WHERE id = ?",
+            (id,),
+        )
+        auto = cur.fetchall()[0]
+        return Automation(
+            id=auto[0],
+            if_status_is=ApplicationStatusAPI.get(auto[1]),
+            change_status_to=ApplicationStatusAPI.get(auto[2]),
+            after=auto[3],
+            period=auto[4],
+            created_at=auto[5],
+        )
+
+    @classmethod
     def get_all(self) -> list[Automation]:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
@@ -57,3 +76,10 @@ class AutomationAPI:
                 )
             )
         return results
+
+    @classmethod
+    def delete(self, id: int):
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute("DELETE FROM automation WHERE id = ?", (id,))
+        con.commit()

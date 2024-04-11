@@ -9,6 +9,7 @@ from ..models import (
     ApplicationStatus,
     ApplicationUpdate,
     Employer,
+    LatestAutomationUpdateRow,
     LatestUpdateRow,
 )
 from ..settings import DB_NAME, TZ
@@ -79,6 +80,30 @@ class ApplicationUpdateAPI:
                     triggerer=f"{tup[2]} {tup[3]}",
                     application_id=tup[4],
                     employer=tup[5],
+                )
+            )
+        return updates
+
+    @classmethod
+    def get_latest_by_auto(self, auto_id: int, limit: int) -> list[LatestAutomationUpdateRow]:
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT atu.application_id, au.created_at"
+            " FROM application_update au"
+            " JOIN application_to_update atu"
+            " ON au.id = atu.update_id"
+            " ORDER BY au.created_at DESC"
+            " LIMIT ?",
+            (limit,),
+        )
+        data = cur.fetchall()
+        updates = []
+        for tup in data:
+            updates.append(
+                LatestAutomationUpdateRow(
+                    application_id=tup[0],
+                    created_at=tup[1]
                 )
             )
         return updates

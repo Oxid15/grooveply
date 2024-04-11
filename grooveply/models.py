@@ -32,6 +32,11 @@ class LatestUpdateRow(BaseModel):
     created_at: str
 
 
+class LatestAutomationUpdateRow(BaseModel):
+    application_id: int
+    created_at: str
+
+
 class Employer(BaseModel):
     name: str
 
