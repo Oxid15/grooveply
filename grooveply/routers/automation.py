@@ -92,7 +92,7 @@ def automations() -> list[AnyComponent]:
             c.Table(
                 data=data,
                 columns=[
-                    DisplayLookup(field="id", on_click=GoToEvent(url="{id}")),
+                    DisplayLookup(field="id"),
                     DisplayLookup(field="if_status_is"),
                     DisplayLookup(field="change_status_to"),
                     DisplayLookup(field="after"),
