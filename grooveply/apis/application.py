@@ -93,9 +93,10 @@ class ApplicationUpdateAPI:
             " FROM application_update au"
             " JOIN application_to_update atu"
             " ON au.id = atu.update_id"
+            " WHERE au.triggerer_id = ?"
             " ORDER BY au.created_at DESC"
             " LIMIT ?",
-            (limit,),
+            (auto_id, limit),
         )
         data = cur.fetchall()
         updates = []
