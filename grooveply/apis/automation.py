@@ -15,7 +15,7 @@ class AutomationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
 
-        now = pendulum.now(tz=TZ)
+        now = str(pendulum.now(tz=TZ))
         cur.execute(
             "INSERT INTO automation "
             "(if_status_is, change_status_to, after, period, created_at) VALUES"

@@ -5,7 +5,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup, DisplayMode
-from fastui.events import BackEvent, GoToEvent
+from fastui.events import BackEvent, GoToEvent, PageEvent
 from fastui.forms import fastui_form
 from pydantic import BaseModel
 
@@ -112,61 +112,67 @@ def automation(id) -> list[AnyComponent]:
     updates = ApplicationUpdateAPI.get_latest_by_auto(id, 10)
 
     components = [
-        # c.Link(
-        #     components=[
-        #         c.Button(
-        #             text="Delete",
-        #             named_style="warning",
-        #             on_click=PageEvent(name="del-confirmation"),
-        #         ),
-        #         c.Link(
-        #             components=[c.Button(text="Edit", named_style="secondary")],
-        #             on_click=GoToEvent(url=f"/automation/update-form/{id}"),
-        #         ),
-        #         c.Modal(
-        #             title="Delete",
-        #             body=[
-        #                 c.Paragraph(text="Are you sure?"),
-        #                 c.Form(
-        #                     form_fields=[],
-        #                     submit_url=f"/api/automation/delete/{id}",
-        #                     loading=[c.Spinner(text="Okay...")],
-        #                     footer=[],
-        #                     submit_trigger=PageEvent(name="del-confirmation-submit"),
-        #                 ),
-        #             ],
-        #             footer=[
-        #                 c.Button(
-        #                     text="Cancel",
-        #                     named_style="secondary",
-        #                     on_click=PageEvent(name="del-confirmation", clear=True),
-        #                 ),
-        #                 c.Button(
-        #                     text="Delete",
-        #                     named_style="warning",
-        #                     on_click=PageEvent(name="del-confirmation-submit"),
-        #                 ),
-        #             ],
-        #             open_trigger=PageEvent(name="del-confirmation"),
-        #         ),
-        #     ]
-        # ),
+        c.Link(
+            components=[
+                c.Button(
+                    text="Delete",
+                    named_style="warning",
+                    on_click=PageEvent(name="del-confirmation"),
+                ),
+                c.Modal(
+                    title="Delete",
+                    body=[
+                        c.Paragraph(text="Are you sure?"),
+                        c.Form(
+                            form_fields=[],
+                            submit_url=f"/api/automation/delete/{id}",
+                            loading=[c.Spinner(text="Okay...")],
+                            footer=[],
+                            submit_trigger=PageEvent(name="del-confirmation-submit"),
+                        ),
+                    ],
+                    footer=[
+                        c.Button(
+                            text="Cancel",
+                            named_style="secondary",
+                            on_click=PageEvent(name="del-confirmation", clear=True),
+                        ),
+                        c.Button(
+                            text="Delete",
+                            named_style="warning",
+                            on_click=PageEvent(name="del-confirmation-submit"),
+                        ),
+                    ],
+                    open_trigger=PageEvent(name="del-confirmation"),
+                ),
+            ]
+        ),
         c.Paragraph(text=f"Created: {auto.created_at}"),
         c.Paragraph(
             text=f"If status is {auto.if_status_is.name} then"
             f" changes status to {auto.change_status_to.name}"
             f" after {auto.after} {auto.period}"
         ),
-        c.Table(
-                    data=updates,
-                    columns=[
-                        DisplayLookup(
-                            field="application_id",
-                            on_click=GoToEvent(url="/application/{application_id}/details"),
-                        ),
-                        DisplayLookup(field="created_at", mode=DisplayMode.date),
-                    ],
-                ),
+        (
+            c.Table(
+                data=updates,
+                columns=[
+                    DisplayLookup(
+                        field="application_id",
+                        on_click=GoToEvent(url="/application/{application_id}/details"),
+                    ),
+                    DisplayLookup(field="created_at", mode=DisplayMode.date),
+                ],
+            )
+            if len(updates)
+            else c.Paragraph(text="No updates triggered by this automation yet")
+        ),
     ]
 
     return page("Automation", components)
+
+
+@router.post("/delete/{id}", response_model=FastUI, response_model_exclude_none=True)
+def delete(id):
+    AutomationAPI.delete(id)
+    return [c.FireEvent(event=GoToEvent(url="/automation/"))]
