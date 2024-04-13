@@ -1,6 +1,5 @@
 from typing import Literal, Optional
 
-from pendulum import DateTime
 from pydantic import BaseModel
 
 ApplicationStatusName = Literal[
@@ -38,7 +37,14 @@ class LatestAutomationUpdateRow(BaseModel):
 
 
 class Employer(BaseModel):
+    id: int
     name: str
+
+
+class EmployerPage(BaseModel):
+    name: str
+    total_applications: int
+    total_locations: int
 
 
 class Location(BaseModel):

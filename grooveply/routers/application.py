@@ -38,6 +38,7 @@ class ApplicationUpdateForm(BaseModel):
 class ApplicationRow(BaseModel):
     id: int
     status: str
+    employer_id: int
     employer: str
     location: Optional[str]
     job_board: Optional[str]
@@ -250,7 +251,9 @@ def create_update(id: int, form: Annotated[UpdateForm, fastui_form(UpdateForm)])
     return [c.FireEvent(event=GoToEvent(url=f"/application/{id}/updates"))]
 
 
-@router.get("/{id}/updates/create-update-form", response_model=FastUI, response_model_exclude_none=True)
+@router.get(
+    "/{id}/updates/create-update-form", response_model=FastUI, response_model_exclude_none=True
+)
 def create_update_form(id):
     return page(
         f"New Update {id}",
@@ -310,6 +313,7 @@ def applications(status: str | None = None) -> list[AnyComponent]:
         ApplicationRow(
             id=app.id,
             status=app.status.name,
+            employer_id=app.employer.id,
             employer=app.employer.name,
             location=app.location_name,
             job_board=app.job_board_name,
@@ -342,7 +346,9 @@ def applications(status: str | None = None) -> list[AnyComponent]:
                 columns=[
                     DisplayLookup(field="id", on_click=GoToEvent(url="{id}/details")),
                     DisplayLookup(field="status"),
-                    DisplayLookup(field="employer"),
+                    DisplayLookup(
+                        field="employer", on_click=GoToEvent(url="/employer/{employer_id}")
+                    ),
                     DisplayLookup(field="location"),
                     DisplayLookup(field="job_board"),
                     DisplayLookup(field="created_at", mode=DisplayMode.date),

@@ -151,7 +151,7 @@ class ApplicationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
-            "SELECT app.id, emp.name, status.name, loc.name, jb.name, app.description,"
+            "SELECT app.id, emp.id, emp.name, status.name, loc.name, jb.name, app.description,"
             " app.url,"
             " app.status_updated_at, app.created_at"
             " FROM application app"
@@ -169,14 +169,14 @@ class ApplicationAPI:
 
         app = Application(
             id=data[0],
-            employer=Employer(name=data[1]),
-            status=ApplicationStatus(name=data[2]),
-            location_name=data[3],
-            job_board_name=data[4],
-            description=data[5],
-            url=data[6],
-            status_updated_at=data[7],
-            created_at=data[8],
+            employer=Employer(id=data[1], name=data[2]),
+            status=ApplicationStatus(name=data[3]),
+            location_name=data[4],
+            job_board_name=data[5],
+            description=data[6],
+            url=data[7],
+            status_updated_at=data[8],
+            created_at=data[9],
         )
         return app
 
@@ -218,7 +218,7 @@ class ApplicationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
-            "SELECT app.id, emp.name, status.name, loc.name, "
+            "SELECT app.id, emp.id, emp.name, status.name, loc.name, "
             " jb.name,"
             " app.description, app.url, app.status_updated_at, app.created_at"
             " FROM application app"
@@ -238,14 +238,14 @@ class ApplicationAPI:
             results.append(
                 Application(
                     id=app[0],
-                    employer=Employer(name=app[1]),
-                    status=ApplicationStatus(name=app[2]),
-                    location_name=app[3],
-                    job_board_name=app[4],
-                    description=app[5],
-                    url=app[6],
-                    status_updated_at=app[7],
-                    created_at=app[8],
+                    employer=Employer(id=app[1], name=app[2]),
+                    status=ApplicationStatus(name=app[3]),
+                    location_name=app[4],
+                    job_board_name=app[5],
+                    description=app[6],
+                    url=app[7],
+                    status_updated_at=app[8],
+                    created_at=app[9],
                 )
             )
         return results
