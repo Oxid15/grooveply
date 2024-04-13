@@ -11,6 +11,7 @@ from fastui.events import GoToEvent
 from grooveply.apis.application import ApplicationUpdateAPI
 from grooveply.auto import update_statuses
 from grooveply.db import create_tables
+from grooveply.migrations import apply_migrations
 from grooveply.routers.application import router as application_router
 from grooveply.routers.automation import router as automation_router
 from grooveply.routers.job_board import router as job_board_router
@@ -18,7 +19,9 @@ from grooveply.routers.location import router as location_router
 from grooveply.utils import page
 
 app = FastAPI(debug=True)
+
 create_tables()
+apply_migrations()
 update_statuses()
 
 router = APIRouter()

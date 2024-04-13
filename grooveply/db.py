@@ -93,6 +93,9 @@ def create_tables():
         ")"
     )
 
+    cur.execute("CREATE TABLE IF NOT EXISTS schema_history (version INTEGER NOT NULL)")
+    cur.execute("INSERT INTO schema_history (version) VALUES (0)")
+
     con.commit()
 
 
@@ -105,14 +108,13 @@ def register_update(app_id: int, description: str, triggerer_type: str, triggere
         " (description, created_at, triggerer_type, triggerer_id) VALUES"
         " (?, ?, ?, ?)"
         " RETURNING id",
-        (description, now, triggerer_type, triggerer_id)
+        (description, now, triggerer_type, triggerer_id),
     )
     inserted = cur.fetchall()[0][0]
 
     cur.execute(
-        "INSERT INTO application_to_update"
-        " (application_id, update_id) VALUES (?, ?)",
-        (app_id, inserted)
+        "INSERT INTO application_to_update" " (application_id, update_id) VALUES (?, ?)",
+        (app_id, inserted),
     )
 
     con.commit()
