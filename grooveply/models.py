@@ -43,6 +43,7 @@ class Employer(BaseModel):
 
 class EmployerPage(BaseModel):
     name: str
+    created_at: str
     total_applications: int
     total_locations: int
 

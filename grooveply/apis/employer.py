@@ -1,7 +1,9 @@
 import sqlite3
 
+import pendulum
+
 from ..models import EmployerPage
-from ..settings import DB_NAME
+from ..settings import DB_NAME, TZ
 
 
 class EmployerAPI:
@@ -9,12 +11,15 @@ class EmployerAPI:
     def create(cls, name: str) -> int:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
+
+        now = str(pendulum.now(tz=TZ))
         cur.execute(
-            "INSERT INTO employer (name) VALUES"
-            " (?)"
-            " ON CONFLICT (name) DO UPDATE set name = excluded.name"
+            "INSERT INTO employer (name, created_at) VALUES"
+            " (?, ?)"
+            " ON CONFLICT (name) DO UPDATE set name = excluded.name,"
+            " created_at = employer.created_at"
             " RETURNING id",
-            (name,),
+            (name, now),
         )
         new_id = cur.fetchall()[0][0]
         con.commit()
@@ -25,7 +30,7 @@ class EmployerAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
-            "SELECT id, name FROM employer WHERE id = ?",
+            "SELECT id, name, created_at FROM employer WHERE id = ?",
             (id,),
         )
         emp_data = cur.fetchone()
@@ -52,6 +57,7 @@ class EmployerAPI:
 
         return EmployerPage(
             name=emp_data[1],
+            created_at=emp_data[2],
             total_applications=app_cnt,
             total_locations=loc_cnt,
         )
