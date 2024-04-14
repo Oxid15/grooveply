@@ -28,7 +28,7 @@ class EmployerAPI:
             "SELECT id, name FROM employer WHERE id = ?",
             (id,),
         )
-        emp_data = cur.fetchone()[0]
+        emp_data = cur.fetchone()
 
         cur.execute(
             "SELECT COUNT(*) FROM application app"
