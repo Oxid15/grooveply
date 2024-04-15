@@ -23,6 +23,16 @@ class ApplicationUpdate(BaseModel):
     application_id: Optional[int] = None
 
 
+class Goal(BaseModel):
+    id: int
+    value: int
+    each: int
+    period: TimePeriod
+    start_date: str
+    end_date: Optional[str]
+    created_at: str
+
+
 class LatestUpdateRow(BaseModel):
     triggerer: str
     application_id: int

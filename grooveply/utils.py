@@ -30,6 +30,11 @@ def page(title, components: list[AnyComponent]) -> list[AnyComponent]:
                     on_click=GoToEvent(url="/job_board/"),
                     active="startswith:/job_board/",
                 ),
+                c.Link(
+                    components=[c.Text(text="Goals")],
+                    on_click=GoToEvent(url="/goal/"),
+                    active="startswith:/goal/",
+                ),
             ],
         ),
         c.Page(components=components),

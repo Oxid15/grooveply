@@ -96,6 +96,18 @@ def create_tables():
     cur.execute("CREATE TABLE IF NOT EXISTS schema_history (version INTEGER NOT NULL)")
     cur.execute("INSERT INTO schema_history (version) VALUES (0)")
 
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS application_goal("
+        "id INTEGER PRIMARY KEY NOT NULL,"
+        "value INTEGER NOT NULL,"
+        "each INTEGER NOT NULL,"
+        "period TEXT NOT NULL,"
+        "start_date TEXT NOT NULL,"
+        "end_date TEXT,"
+        "created_at TEXT NOT NULL"
+        ")"
+    )
+
     con.commit()
 
 

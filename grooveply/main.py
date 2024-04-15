@@ -15,6 +15,7 @@ from grooveply.migrations import apply_migrations
 from grooveply.routers.application import router as application_router
 from grooveply.routers.automation import router as automation_router
 from grooveply.routers.employer import router as employer_router
+from grooveply.routers.goal import router as goal_router
 from grooveply.routers.job_board import router as job_board_router
 from grooveply.routers.location import router as location_router
 from grooveply.utils import page
@@ -61,6 +62,7 @@ app.include_router(router, prefix="/api")
 app.include_router(application_router, prefix="/api/application")
 app.include_router(automation_router, prefix="/api/automation")
 app.include_router(employer_router, prefix="/api/employer")
+app.include_router(goal_router, prefix="/api/goal")
 app.include_router(job_board_router, prefix="/api/job_board")
 app.include_router(location_router, prefix="/api/location")
 
