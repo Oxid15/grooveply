@@ -7,8 +7,10 @@ from fastui import components as c
 from fastui import prebuilt_html
 from fastui.components.display import DisplayLookup, DisplayMode
 from fastui.events import GoToEvent
+from pydantic import BaseModel
 
-from grooveply.apis.application import ApplicationUpdateAPI
+from grooveply.apis.application import ApplicationAPI, ApplicationUpdateAPI
+from grooveply.apis.goal import GoalAPI
 from grooveply.auto import update_statuses
 from grooveply.db import create_tables
 from grooveply.migrations import apply_migrations
@@ -25,6 +27,14 @@ app = FastAPI(debug=True)
 create_tables()
 apply_migrations()
 update_statuses()
+
+
+class GoalRow(BaseModel):
+    id: int
+    done: int
+    goal: int
+    progress: str
+
 
 router = APIRouter()
 
@@ -54,6 +64,36 @@ def main_page() -> list[AnyComponent]:
         )
     else:
         components.append(c.Paragraph(text="No updates yet"))
+
+    goals = GoalAPI.get_all()
+
+    starts = [GoalAPI.latest_period_start(goal) for goal in goals]
+    completions = [ApplicationAPI.count_since(str(start)) for start in starts]
+
+    data = [
+        GoalRow(
+            id=goal.id, done=cmp, goal=goal.value, progress=f"{int(round(cmp / goal.value*100))}%"
+        )
+        for goal, cmp in zip(goals, completions)
+    ]
+
+    if len(goals):
+        components.extend(
+            [
+                c.Heading(text="Goals"),
+                c.Table(
+                    data=data,
+                    columns=[
+                        DisplayLookup(field="id", on_click=GoToEvent(url="goal/{id}")),
+                        DisplayLookup(field="done"),
+                        DisplayLookup(field="goal"),
+                        DisplayLookup(field="progress"),
+                    ],
+                ),
+            ]
+        )
+    else:
+        components.append(c.Paragraph(text="No goals set yet"))
 
     return page("Main Page", components)
 

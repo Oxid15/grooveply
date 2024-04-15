@@ -93,13 +93,7 @@ def goal_page(id) -> list[AnyComponent]:
     if goal.end_date is not None and pendulum.parse(goal.end_date) < pendulum.now(tz=TZ):
         components.append(c.Paragraph(text=f"This goal expired since {goal.end_date}"))
     else:
-        now = pendulum.now(tz=TZ)
-        start_date = pendulum.parse(goal.start_date)
-
-        rem_days = (now - start_date).total_days() % pendulum.Duration(
-            **{goal.period: goal.each}
-        ).total_days()
-        latest_period_start = now - pendulum.Duration(days=rem_days)
+        latest_period_start = GoalAPI.latest_period_start(goal)
         cnt = ApplicationAPI.count_since(str(latest_period_start))
         components.extend(
             [

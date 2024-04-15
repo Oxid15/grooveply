@@ -3,6 +3,7 @@ from typing import Optional
 
 import pendulum
 
+from ..apis.application import ApplicationAPI
 from ..models import Goal, TimePeriod
 from ..settings import DB_NAME, TZ
 
@@ -84,3 +85,14 @@ class GoalAPI:
             (id,),
         )
         con.commit()
+
+    @classmethod
+    def latest_period_start(cls, goal: Goal) -> pendulum.DateTime:
+        now = pendulum.now(tz=TZ)
+        start_date = pendulum.parse(goal.start_date)
+
+        rem_days = (now - start_date).total_days() % pendulum.Duration(
+            **{goal.period: goal.each}
+        ).total_days()
+        latest_period_start = now - pendulum.Duration(days=rem_days)
+        return latest_period_start
