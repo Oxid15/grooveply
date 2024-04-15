@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Optional
 
 import pendulum
 
@@ -9,7 +10,7 @@ from ..settings import DB_NAME, TZ
 class GoalAPI:
     @classmethod
     def create(
-        cls, value: int, each: int, period: TimePeriod, start_date: str, end_date: str
+        cls, value: int, each: int, period: TimePeriod, start_date: str, end_date: Optional[str]
     ) -> int:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()

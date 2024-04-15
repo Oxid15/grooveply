@@ -249,3 +249,14 @@ class ApplicationAPI:
                 )
             )
         return results
+
+    @classmethod
+    def count_since(self, date: str) -> int:
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM application app"
+            " WHERE created_at > ?", (date,)
+        )
+        cnt = cur.fetchone()[0]
+        return cnt
