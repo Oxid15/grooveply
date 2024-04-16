@@ -45,7 +45,7 @@ class EmployerAPI:
         app_cnt = cur.fetchone()[0]
 
         cur.execute(
-            "SELECT COUNT(*) FROM location loc"
+            "SELECT COUNT(DISTINCT loc.id) FROM location loc"
             " JOIN application app"
             " ON loc.id = app.location_id"
             " JOIN employer emp"
