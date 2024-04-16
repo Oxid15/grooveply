@@ -185,27 +185,35 @@ def application_details(id) -> list[AnyComponent]:
     components.extend(
         [
             c.Paragraph(text=f"Created: {app.created_at}"),
-            c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
+            c.Heading(text=app.status.name, level=2),
+            c.Paragraph(text=f"Updated: {app.status_updated_at}")
         ]
     )
 
     if app.description:
+        components.append(c.Heading(text="Description", level=2))
         components.extend([c.Paragraph(text=text) for text in app.description.split("\n")])
-    else:
-        components.append(c.Paragraph(text="No description"))
 
     if app.url:
-        components.append(
-            c.Link(
-                components=[c.Text(text=app.url if app.url else "No url")],
-                on_click=GoToEvent(url=app.url),
-            )
+        components.extend(
+            [
+                c.Heading(text="URL", level=2),
+                c.Link(
+                    components=[c.Text(text=app.url)],
+                    on_click=GoToEvent(url=app.url),
+                ),
+            ]
         )
+
     if app.location_name:
-        components.append(c.Paragraph(text=f"Located in: {app.location_name}"))
+        components.extend(
+            [c.Heading(text="Location", level=2), c.Paragraph(text=app.location_name)]
+        )
 
     if app.job_board_name:
-        components.append(c.Paragraph(text=f"Applied on: {app.job_board_name}"))
+        components.extend(
+            [c.Heading(text="Applied on", level=2), c.Paragraph(text=app.job_board_name)]
+        )
 
     components.extend(
         [
