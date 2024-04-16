@@ -324,6 +324,15 @@ class FilterForm(BaseModel):
     status: ApplicationStatusName
 
 
+def crop_text(text: Optional[str], limit: int) -> Optional[str]:
+    if text is None:
+        return text
+
+    if len(text) > limit:
+        return text[:limit - 3] + "..."
+    return text
+
+
 @router.get("/", response_model=FastUI, response_model_exclude_none=True)
 def applications(status: str | None = None) -> list[AnyComponent]:
     apps = ApplicationAPI()
@@ -337,7 +346,7 @@ def applications(status: str | None = None) -> list[AnyComponent]:
             employer=app.employer.name,
             location=app.location_name,
             job_board=app.job_board_name,
-            description=app.description,
+            description=crop_text(app.description, 75),
             created_at=pendulum.parse(app.created_at).diff_for_humans(pendulum.now(tz=TZ)),
         )
         for app in data
