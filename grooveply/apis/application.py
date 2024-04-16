@@ -94,6 +94,7 @@ class ApplicationUpdateAPI:
             " JOIN application_to_update atu"
             " ON au.id = atu.update_id"
             " WHERE au.triggerer_id = ?"
+            " AND au.triggerer_type = 'automation'"
             " ORDER BY au.created_at DESC"
             " LIMIT ?",
             (auto_id, limit),
