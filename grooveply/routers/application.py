@@ -185,14 +185,14 @@ def application_details(id) -> list[AnyComponent]:
         *application_header(id, app.employer.name),
         c.Link(
             components=[
+                c.Link(
+                    components=[c.Button(text="Edit", named_style="secondary")],
+                    on_click=GoToEvent(url=f"/application/update-form/{id}"),
+                ),
                 c.Button(
                     text="Delete",
                     named_style="warning",
                     on_click=PageEvent(name="del-confirmation"),
-                ),
-                c.Link(
-                    components=[c.Button(text="Edit", named_style="secondary")],
-                    on_click=GoToEvent(url=f"/application/update-form/{id}"),
                 ),
                 c.Modal(
                     title="Delete",
