@@ -58,7 +58,7 @@ def table() -> list[AnyComponent]:
             c.Table(
                 data=data,
                 columns=[
-                    DisplayLookup(field="id", on_click=GoToEvent(url="{id}")),
+                    DisplayLookup(field="id"),
                     DisplayLookup(field="name"),
                     DisplayLookup(field="url"),
                     DisplayLookup(field="created_at", mode=DisplayMode.date),
