@@ -199,7 +199,7 @@ def application_details(id) -> list[AnyComponent]:
             [
                 c.Heading(text="URL", level=2),
                 c.Link(
-                    components=[c.Text(text=app.url)],
+                    components=[c.Paragraph(text=app.url)],
                     on_click=GoToEvent(url=app.url),
                 ),
             ]
