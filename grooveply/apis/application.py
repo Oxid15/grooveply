@@ -187,7 +187,6 @@ class ApplicationAPI:
         id: int,
         status_id: Optional[int],
         status_updated_at: Optional[DateTime],
-        description: Optional[str],
         url: Optional[str],
     ):
         con = sqlite3.connect(DB_NAME)
@@ -198,11 +197,10 @@ class ApplicationAPI:
             UPDATE application
             SET status_id = COALESCE(?, status_id),
             status_updated_at = COALESCE(?, status_updated_at),
-            description = COALESCE(?, description),
             url = COALESCE(?, url)
             WHERE id = ?;
             """,
-            (status_id, status_updated_at, description, url, id),
+            (status_id, status_updated_at, url, id),
         )
         con.commit()
 

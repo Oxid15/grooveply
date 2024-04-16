@@ -31,7 +31,6 @@ class ApplicationForm(BaseModel):
 
 class ApplicationUpdateForm(BaseModel):
     app_status_name: ApplicationStatusName
-    description: Annotated[str | None, Textarea(rows=5)] = Field(None)
     url: str = None
 
 
@@ -109,7 +108,7 @@ def application_update(
     else:
         status_updated_at = None
 
-    ApplicationAPI.update(id, new_status_id, status_updated_at, form.description, form.url)
+    ApplicationAPI.update(id, new_status_id, status_updated_at, form.url)
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 
@@ -140,7 +139,6 @@ def application_update_form(id) -> list[AnyComponent]:
     update_form = create_model(
         "ApplicationUpdateForm",
         app_status_name=(ApplicationStatusName, app.status.name),
-        description=(str, app.description),
         url=(str, app.url),
     )
     return [
