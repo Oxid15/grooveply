@@ -226,8 +226,14 @@ def application_details(id) -> list[AnyComponent]:
         ),
         c.Paragraph(text=f"Created: {app.created_at}"),
         c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
-        c.Paragraph(text=app.description if app.description else "No description"),
     ]
+
+    if app.description:
+        components.extend([
+            c.Paragraph(text=text) for text in app.description.split("\n")
+        ])
+    else:
+        components.append(c.Paragraph(text="No description"))
 
     if app.url:
         components.append(
