@@ -158,7 +158,6 @@ def application_update_form(id) -> list[AnyComponent]:
 
 def application_header(id: int, name: str):
     return [
-        c.Heading(text=f"Application to {name}", level=2),
         c.LinkList(
             links=[
                 c.Link(
@@ -174,6 +173,7 @@ def application_header(id: int, name: str):
             ],
             mode="tabs",
         ),
+        c.Heading(text=f"Application to {name}", level=2),
     ]
 
 
@@ -181,55 +181,16 @@ def application_header(id: int, name: str):
 def application_details(id) -> list[AnyComponent]:
     app = ApplicationAPI.get(id)
 
-    components = [
-        *application_header(id, app.employer.name),
-        c.Link(
-            components=[
-                c.Link(
-                    components=[c.Button(text="Edit", named_style="secondary")],
-                    on_click=GoToEvent(url=f"/application/update-form/{id}"),
-                ),
-                c.Button(
-                    text="Delete",
-                    named_style="warning",
-                    on_click=PageEvent(name="del-confirmation"),
-                ),
-                c.Modal(
-                    title="Delete",
-                    body=[
-                        c.Paragraph(text="Are you sure?"),
-                        c.Form(
-                            form_fields=[],
-                            submit_url=f"/api/application/delete/{id}",
-                            loading=[c.Spinner(text="Okay...")],
-                            footer=[],
-                            submit_trigger=PageEvent(name="del-confirmation-submit"),
-                        ),
-                    ],
-                    footer=[
-                        c.Button(
-                            text="Cancel",
-                            named_style="secondary",
-                            on_click=PageEvent(name="del-confirmation", clear=True),
-                        ),
-                        c.Button(
-                            text="Delete",
-                            named_style="warning",
-                            on_click=PageEvent(name="del-confirmation-submit"),
-                        ),
-                    ],
-                    open_trigger=PageEvent(name="del-confirmation"),
-                ),
-            ]
-        ),
-        c.Paragraph(text=f"Created: {app.created_at}"),
-        c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
-    ]
+    components = application_header(id, app.employer.name)
+    components.extend(
+        [
+            c.Paragraph(text=f"Created: {app.created_at}"),
+            c.Paragraph(text=f"Status: {app.status.name}, updated: {app.status_updated_at}"),
+        ]
+    )
 
     if app.description:
-        components.extend([
-            c.Paragraph(text=text) for text in app.description.split("\n")
-        ])
+        components.extend([c.Paragraph(text=text) for text in app.description.split("\n")])
     else:
         components.append(c.Paragraph(text="No description"))
 
@@ -245,6 +206,50 @@ def application_details(id) -> list[AnyComponent]:
 
     if app.job_board_name:
         components.append(c.Paragraph(text=f"Applied on: {app.job_board_name}"))
+
+    components.extend(
+        [
+            c.Link(
+                components=[
+                    c.Link(
+                        components=[c.Button(text="Edit", named_style="secondary")],
+                        on_click=GoToEvent(url=f"/application/update-form/{id}"),
+                    ),
+                    c.Button(
+                        text="Delete",
+                        named_style="warning",
+                        on_click=PageEvent(name="del-confirmation"),
+                    ),
+                    c.Modal(
+                        title="Delete",
+                        body=[
+                            c.Paragraph(text="Are you sure?"),
+                            c.Form(
+                                form_fields=[],
+                                submit_url=f"/api/application/delete/{id}",
+                                loading=[c.Spinner(text="Okay...")],
+                                footer=[],
+                                submit_trigger=PageEvent(name="del-confirmation-submit"),
+                            ),
+                        ],
+                        footer=[
+                            c.Button(
+                                text="Cancel",
+                                named_style="secondary",
+                                on_click=PageEvent(name="del-confirmation", clear=True),
+                            ),
+                            c.Button(
+                                text="Delete",
+                                named_style="warning",
+                                on_click=PageEvent(name="del-confirmation-submit"),
+                            ),
+                        ],
+                        open_trigger=PageEvent(name="del-confirmation"),
+                    ),
+                ]
+            ),
+        ]
+    )
 
     return page("Application", components)
 
