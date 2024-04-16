@@ -40,7 +40,7 @@ def migration_1():
     cur.execute("INSERT INTO schema_history VALUES (?)", (1,))
 
     cur.execute(
-        "UPDATE employer SET created_at = ? WHERE created_at is NULL", (str(pendulum.now(tz=TZ)))
+        "UPDATE employer SET created_at = ? WHERE created_at is NULL", (str(pendulum.now(tz=TZ)),)
     )
     con.commit()
 
