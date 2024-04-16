@@ -79,6 +79,7 @@ class Application(BaseModel):
     job_board_name: Optional[str] = None
     description: Optional[str] = None
     url: Optional[str] = None
+    notes: Optional[str] = None
     status_updated_at: str
     created_at: str
 

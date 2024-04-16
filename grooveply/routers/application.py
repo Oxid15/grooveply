@@ -275,9 +275,7 @@ def application_updates(id) -> list[AnyComponent]:
 
     components = [
         *application_header(id, app.employer.name),
-        c.Paragraph(text=f"Created: {app.created_at}"),
-        c.Paragraph(text=f"Status: {app.status.name}"),
-        c.Paragraph(text=app.description if app.description else "No description"),
+        c.Markdown(text=app.notes if app.notes else "No notes"),
         c.Link(
             components=[c.Button(text="New")],
             on_click=GoToEvent(url="create-update-form"),

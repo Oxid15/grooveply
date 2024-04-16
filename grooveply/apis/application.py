@@ -152,7 +152,7 @@ class ApplicationAPI:
         cur = con.cursor()
         cur.execute(
             "SELECT app.id, emp.id, emp.name, status.name, loc.name, jb.name, app.description,"
-            " app.url,"
+            " app.url, app.notes,"
             " app.status_updated_at, app.created_at"
             " FROM application app"
             " JOIN employer emp ON app.employer_id = emp.id"
@@ -175,8 +175,9 @@ class ApplicationAPI:
             job_board_name=data[5],
             description=data[6],
             url=data[7],
-            status_updated_at=data[8],
-            created_at=data[9],
+            notes=data[8],
+            status_updated_at=data[9],
+            created_at=data[10],
         )
         return app
 
@@ -227,7 +228,7 @@ class ApplicationAPI:
             ")"
             "SELECT app.id, emp.id, emp.name, status.name, loc.name, "
             " jb.name,"
-            " app.description, app.url, app.status_updated_at, app.created_at"
+            " app.description, app.url, app.notes, app.status_updated_at, app.created_at"
             " FROM application app"
             " JOIN latest_updates lu ON app.id = lu.id"
             " JOIN employer emp ON app.employer_id = emp.id"
@@ -249,8 +250,9 @@ class ApplicationAPI:
                     job_board_name=app[5],
                     description=app[6],
                     url=app[7],
-                    status_updated_at=app[8],
-                    created_at=app[9],
+                    notes=app[8],
+                    status_updated_at=app[9],
+                    created_at=app[10],
                 )
             )
         return results

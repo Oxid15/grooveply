@@ -45,7 +45,16 @@ def migration_1():
     con.commit()
 
 
-MIGRATIONS = {1: migration_1}
+def migration_2():
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute("ALTER TABLE application ADD COLUMN notes TEXT")
+
+    cur.execute("INSERT INTO schema_history VALUES (?)", (2,))
+    con.commit()
+
+
+MIGRATIONS = {1: migration_1, 2: migration_2}
 
 
 def apply_migrations():
