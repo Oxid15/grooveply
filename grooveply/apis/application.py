@@ -218,18 +218,23 @@ class ApplicationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
+            "WITH latest_updates AS ("
+            "SELECT a.id,"
+            " MAX(au.created_at) as latest_update_time FROM application a"
+            " LEFT JOIN application_to_update atu ON a.id = atu.application_id"
+            " LEFT JOIN application_update au ON atu.update_id = au.id"
+            " GROUP BY a.id"
+            ")"
             "SELECT app.id, emp.id, emp.name, status.name, loc.name, "
             " jb.name,"
             " app.description, app.url, app.status_updated_at, app.created_at"
             " FROM application app"
+            " JOIN latest_updates lu ON app.id = lu.id"
             " JOIN employer emp ON app.employer_id = emp.id"
-            " JOIN application_status status"
-            " ON app.status_id = status.id"
-            " LEFT JOIN location loc"
-            " ON app.location_id = loc.id"
-            " LEFT JOIN job_board jb"
-            " ON app.job_board_id = jb.id"
-            " ORDER BY app.created_at DESC"
+            " JOIN application_status status ON app.status_id = status.id"
+            " LEFT JOIN location loc ON app.location_id = loc.id"
+            " LEFT JOIN job_board jb ON app.job_board_id = jb.id"
+            " ORDER BY COALESCE(lu.latest_update_time, app.created_at) DESC"
         )
         data = cur.fetchall()
 
