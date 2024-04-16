@@ -284,11 +284,9 @@ def application_updates(id) -> list[AnyComponent]:
 
     components = [
         *application_header(id, app.employer.name),
+        c.Heading(text="Notes", level=2),
         c.Markdown(text=app.notes if app.notes else "No notes"),
-        c.Link(
-            components=[c.Button(text="New")],
-            on_click=GoToEvent(url="create-update-form"),
-        ),
+        c.Heading(text="Updates", level=2),
     ]
 
     updates = ApplicationUpdateAPI.get_all(app.id)
@@ -303,6 +301,13 @@ def application_updates(id) -> list[AnyComponent]:
             )
     else:
         components.append(c.Paragraph(text="No updates"))
+
+    components.append(
+        c.Link(
+            components=[c.Button(text="New Update")],
+            on_click=GoToEvent(url="create-update-form"),
+        )
+    )
 
     return page("Application", components)
 
