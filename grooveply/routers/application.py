@@ -300,13 +300,16 @@ def application_updates(id) -> list[AnyComponent]:
     updates = ApplicationUpdateAPI.get_all(app.id)
     if len(updates):
         for upd in updates:
-            components.append(
+            components.extend([
                 c.Paragraph(
                     text=f"{upd.created_at} |"
                     f" {upd.triggerer_type.capitalize()}"
-                    f" ({upd.triggerer_id:0>2d}) {upd.description}"
+                    f" ({upd.triggerer_id:0>2d})"
+                ),
+                c.Paragraph(
+                    text=upd.description
                 )
-            )
+            ])
     else:
         components.append(c.Paragraph(text="No updates"))
 
