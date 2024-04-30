@@ -118,6 +118,12 @@ def application_delete(id):
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 
+@router.post("/next-status/{id}", response_model=FastUI, response_model_exclude_none=True)
+def application_next_status(id):
+    ApplicationAPI.next_status(id)
+    return [c.FireEvent(event=GoToEvent(url="/application/"))]
+
+
 @router.get("/create-form", response_model=FastUI, response_model_exclude_none=True)
 def application_create_form() -> list[AnyComponent]:
     return page(
@@ -186,7 +192,17 @@ def application_details(id) -> list[AnyComponent]:
         [
             c.Paragraph(text=f"Created: {app.created_at}"),
             c.Heading(text=app.status.name, level=2),
-            c.Paragraph(text=f"Updated: {app.status_updated_at}")
+            c.Button(
+                text="Next Status", on_click=PageEvent(name="next-status"), named_style="secondary"
+            ),
+            c.Form(
+                form_fields=[],
+                submit_url=f"/api/application/next-status/{id}",
+                loading=[c.Spinner(text="Okay...")],
+                footer=[],
+                submit_trigger=PageEvent(name="next-status"),
+            ),
+            c.Paragraph(text=f"Updated: {app.status_updated_at}"),
         ]
     )
 
@@ -300,16 +316,16 @@ def application_updates(id) -> list[AnyComponent]:
     updates = ApplicationUpdateAPI.get_all(app.id)
     if len(updates):
         for upd in updates:
-            components.extend([
-                c.Paragraph(
-                    text=f"{upd.created_at} |"
-                    f" {upd.triggerer_type.capitalize()}"
-                    f" ({upd.triggerer_id:0>2d})"
-                ),
-                c.Paragraph(
-                    text=upd.description
-                )
-            ])
+            components.extend(
+                [
+                    c.Paragraph(
+                        text=f"{upd.created_at} |"
+                        f" {upd.triggerer_type.capitalize()}"
+                        f" ({upd.triggerer_id:0>2d})"
+                    ),
+                    c.Paragraph(text=upd.description),
+                ]
+            )
     else:
         components.append(c.Paragraph(text="No updates"))
 
@@ -332,7 +348,7 @@ def crop_text(text: Optional[str], limit: int) -> Optional[str]:
         return text
 
     if len(text) > limit:
-        return text[:limit - 3] + "..."
+        return text[: limit - 3] + "..."
     return text
 
 

@@ -257,7 +257,7 @@ class ApplicationAPI:
         return results
 
     @classmethod
-    def count_since(self, date: str) -> int:
+    def count_since(cls, date: str) -> int:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(
@@ -266,3 +266,23 @@ class ApplicationAPI:
         )
         cnt = cur.fetchone()[0]
         return cnt
+
+    @classmethod
+    def next_status(cls, id: int):
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+
+        cur.execute("SELECT status_id FROM application"
+                    " WHERE id = ?", (id, ))
+        status_id = cur.fetchone()[0]
+
+        cur.execute("SELECT id FROM application_status"
+                    " WHERE id > ? ORDER BY id ASC"
+                    " LIMIT 1", (status_id,))
+        next_status_id = cur.fetchone()
+
+        if next_status_id is not None:
+            next_status_id = next_status_id[0]
+            cur.execute("UPDATE application SET status_id = ?"
+                        " WHERE id = ?", (next_status_id, id))
+            con.commit()
