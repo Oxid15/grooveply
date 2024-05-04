@@ -14,7 +14,7 @@ from ..apis.application import ApplicationAPI
 from ..apis.goal import GoalAPI
 from ..models import TimePeriod
 from ..settings import TZ
-from ..utils import page
+from ..utils import format_date, page
 
 router = APIRouter()
 
@@ -91,7 +91,7 @@ def goal_page(id) -> list[AnyComponent]:
     components = []
 
     if goal.end_date is not None and pendulum.parse(goal.end_date) < pendulum.now(tz=TZ):
-        components.append(c.Paragraph(text=f"This goal expired since {goal.end_date}"))
+        components.append(c.Paragraph(text=f"This goal is expired since {goal.end_date}"))
     else:
         latest_period_start = GoalAPI.latest_period_start(goal)
         cnt = ApplicationAPI.count_since(str(latest_period_start))
@@ -104,6 +104,6 @@ def goal_page(id) -> list[AnyComponent]:
             ]
         )
         if goal.end_date is not None:
-            components.append(c.Paragraph(text=f"Will end: {goal.end_date}"))
+            components.append(c.Paragraph(text=f"Will end: {format_date(goal.end_date)}"))
 
     return page(f"Goal {id}", components)

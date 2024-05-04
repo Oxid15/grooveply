@@ -15,7 +15,7 @@ from ..apis.employer import EmployerAPI
 from ..db import register_update
 from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
-from ..utils import page
+from ..utils import format_date, page
 
 
 class ApplicationForm(BaseModel):
@@ -190,7 +190,7 @@ def application_details(id) -> list[AnyComponent]:
     components = application_header(id, app.employer.name)
     components.extend(
         [
-            c.Paragraph(text=f"Created: {app.created_at}"),
+            c.Paragraph(text=f"Created: {format_date(app.created_at)}"),
             c.Heading(text=app.status.name, level=2),
             c.Button(
                 text="Next Status", on_click=PageEvent(name="next-status"), named_style="secondary"
@@ -366,7 +366,7 @@ def applications(status: str | None = None) -> list[AnyComponent]:
             location=app.location_name,
             job_board=app.job_board_name,
             description=crop_text(app.description, 75),
-            created_at=pendulum.parse(app.created_at).diff_for_humans(pendulum.now(tz=TZ)),
+            created_at=format_date(app.created_at),
         )
         for app in data
     ]

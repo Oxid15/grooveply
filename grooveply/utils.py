@@ -1,6 +1,23 @@
+import pendulum
 from fastui import AnyComponent
 from fastui import components as c
 from fastui.events import GoToEvent
+
+from .settings import TZ
+
+
+def format_date(date_str: str) -> str:
+    # 02 Mar 2024, Fri
+    date = pendulum.parse(date_str)
+
+    if date.diff(pendulum.now(tz=TZ)).months >= 6:
+        fmt = "DD MMM Y"
+    elif date.diff(pendulum.now(tz=TZ)).days < 7:
+        fmt = "dddd"
+    else:
+        fmt = "DD MMM"
+
+    return date.format(fmt)
 
 
 def page(title, components: list[AnyComponent]) -> list[AnyComponent]:
