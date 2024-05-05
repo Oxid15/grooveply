@@ -4,6 +4,7 @@ from typing import Optional
 import pendulum
 from pendulum import DateTime
 
+from ..db import register_update
 from ..models import (
     Application,
     ApplicationStatus,
@@ -272,17 +273,20 @@ class ApplicationAPI:
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
 
-        cur.execute("SELECT status_id FROM application"
-                    " WHERE id = ?", (id, ))
-        status_id = cur.fetchone()[0]
+        cur.execute("SELECT status_id, ast.name FROM application app"
+                    " JOIN application_status ast ON app.status_id = ast.id"
+                    " WHERE app.id = ?", (id, ))
+        old_status_id, old_status_name = cur.fetchone()
 
-        cur.execute("SELECT id FROM application_status"
+        cur.execute("SELECT id, name FROM application_status"
                     " WHERE id > ? ORDER BY id ASC"
-                    " LIMIT 1", (status_id,))
-        next_status_id = cur.fetchone()
+                    " LIMIT 1", (old_status_id,))
+        result = cur.fetchone()
 
-        if next_status_id is not None:
-            next_status_id = next_status_id[0]
+        if result is not None:
+            next_status_id, new_status_name = result
+
+            register_update(id, f"Changed status {old_status_name} -> {new_status_name}", "user", 1)
             cur.execute("UPDATE application SET status_id = ?"
                         " WHERE id = ?", (next_status_id, id))
             con.commit()
