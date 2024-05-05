@@ -6,6 +6,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup, DisplayMode
+from fastui.components.forms import FormFieldTextarea
 from fastui.events import BackEvent, GoToEvent, PageEvent
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, Field, create_model
@@ -32,6 +33,10 @@ class ApplicationForm(BaseModel):
 class ApplicationUpdateForm(BaseModel):
     app_status_name: ApplicationStatusName
     url: str = None
+
+
+class NoteUpdateForm(BaseModel):
+    notes: str | None
 
 
 class ApplicationRow(BaseModel):
@@ -160,6 +165,27 @@ def application_update_form(id) -> list[AnyComponent]:
             ]
         )
     ]
+
+
+@router.post("/update-notes/{id}", response_model=FastUI, response_model_exclude_none=True)
+def application_update_notes(id, form: Annotated[NoteUpdateForm, fastui_form(NoteUpdateForm)]):
+    ApplicationAPI.update_notes(id, form.notes)
+    return [c.FireEvent(event=GoToEvent(url=f"/application/{id}/updates"))]
+
+
+@router.get("/update-notes-form/{id}", response_model=FastUI, response_model_exclude_none=True)
+def application_update_note(id) -> list[AnyComponent]:
+    app = ApplicationAPI.get(id)
+    return c.Page(
+        components=[
+            c.Form(
+                submit_url=f"/api/application/update-notes/{app.id}",
+                form_fields=[
+                    FormFieldTextarea(name="notes", title="Notes", initial=app.notes, rows=10),
+                ],
+            )
+        ]
+    )
 
 
 def application_header(id: int, name: str):
@@ -310,6 +336,10 @@ def application_updates(id) -> list[AnyComponent]:
         *application_header(id, app.employer.name),
         c.Heading(text="Notes", level=2),
         c.Markdown(text=app.notes if app.notes else "No notes"),
+        c.Link(
+            components=[c.Button(text="Edit")],
+            on_click=GoToEvent(url=f"/application/update-notes-form/{id}"),
+        ),
         c.Heading(text="Updates", level=2),
     ]
 

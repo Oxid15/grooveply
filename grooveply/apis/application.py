@@ -286,3 +286,10 @@ class ApplicationAPI:
             cur.execute("UPDATE application SET status_id = ?"
                         " WHERE id = ?", (next_status_id, id))
             con.commit()
+
+    @classmethod
+    def update_notes(cls, id: int, note: str):
+        con = sqlite3.connect(DB_NAME)
+        cur = con.cursor()
+        cur.execute("UPDATE application SET notes = ? where id = ?", (note, id))
+        con.commit()
