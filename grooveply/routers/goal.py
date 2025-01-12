@@ -106,43 +106,43 @@ def goal_page(id) -> list[AnyComponent]:
         if goal.end_date is not None:
             components.append(c.Paragraph(text=f"Will end: {format_date(goal.end_date)}"))
 
-        components.append(
-            c.Link(
-                components=[
-                    c.Button(
-                        text="Delete",
-                        named_style="warning",
-                        on_click=PageEvent(name="del-confirmation"),
-                    ),
-                    c.Modal(
-                        title="Delete",
-                        body=[
-                            c.Paragraph(text="Are you sure?"),
-                            c.Form(
-                                form_fields=[],
-                                submit_url=f"/api/goal/delete/{id}",
-                                loading=[c.Spinner(text="Okay...")],
-                                footer=[],
-                                submit_trigger=PageEvent(name="del-confirmation-submit"),
-                            ),
-                        ],
-                        footer=[
-                            c.Button(
-                                text="Cancel",
-                                named_style="secondary",
-                                on_click=PageEvent(name="del-confirmation", clear=True),
-                            ),
-                            c.Button(
-                                text="Delete",
-                                named_style="warning",
-                                on_click=PageEvent(name="del-confirmation-submit"),
-                            ),
-                        ],
-                        open_trigger=PageEvent(name="del-confirmation"),
-                    ),
-                ]
-            ),
-        )
+    components.append(
+        c.Link(
+            components=[
+                c.Button(
+                    text="Delete",
+                    named_style="warning",
+                    on_click=PageEvent(name="del-confirmation"),
+                ),
+                c.Modal(
+                    title="Delete",
+                    body=[
+                        c.Paragraph(text="Are you sure?"),
+                        c.Form(
+                            form_fields=[],
+                            submit_url=f"/api/goal/delete/{id}",
+                            loading=[c.Spinner(text="Okay...")],
+                            footer=[],
+                            submit_trigger=PageEvent(name="del-confirmation-submit"),
+                        ),
+                    ],
+                    footer=[
+                        c.Button(
+                            text="Cancel",
+                            named_style="secondary",
+                            on_click=PageEvent(name="del-confirmation", clear=True),
+                        ),
+                        c.Button(
+                            text="Delete",
+                            named_style="warning",
+                            on_click=PageEvent(name="del-confirmation-submit"),
+                        ),
+                    ],
+                    open_trigger=PageEvent(name="del-confirmation"),
+                ),
+            ]
+        ),
+    )
 
     return page(f"Goal {id}", components)
 
