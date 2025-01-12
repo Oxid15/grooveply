@@ -6,7 +6,7 @@ from fastapi.routing import APIRouter
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup
-from fastui.events import BackEvent, GoToEvent
+from fastui.events import BackEvent, GoToEvent, PageEvent
 from fastui.forms import fastui_form
 from pydantic import BaseModel, Field
 
@@ -106,4 +106,48 @@ def goal_page(id) -> list[AnyComponent]:
         if goal.end_date is not None:
             components.append(c.Paragraph(text=f"Will end: {format_date(goal.end_date)}"))
 
+        components.append(
+            c.Link(
+                components=[
+                    c.Button(
+                        text="Delete",
+                        named_style="warning",
+                        on_click=PageEvent(name="del-confirmation"),
+                    ),
+                    c.Modal(
+                        title="Delete",
+                        body=[
+                            c.Paragraph(text="Are you sure?"),
+                            c.Form(
+                                form_fields=[],
+                                submit_url=f"/api/goal/delete/{id}",
+                                loading=[c.Spinner(text="Okay...")],
+                                footer=[],
+                                submit_trigger=PageEvent(name="del-confirmation-submit"),
+                            ),
+                        ],
+                        footer=[
+                            c.Button(
+                                text="Cancel",
+                                named_style="secondary",
+                                on_click=PageEvent(name="del-confirmation", clear=True),
+                            ),
+                            c.Button(
+                                text="Delete",
+                                named_style="warning",
+                                on_click=PageEvent(name="del-confirmation-submit"),
+                            ),
+                        ],
+                        open_trigger=PageEvent(name="del-confirmation"),
+                    ),
+                ]
+            ),
+        )
+
     return page(f"Goal {id}", components)
+
+
+@router.post("/delete/{id}", response_model=FastUI, response_model_exclude_none=True)
+def delete(id):
+    GoalAPI.delete(id)
+    return [c.FireEvent(event=GoToEvent(url="/goal/"))]
