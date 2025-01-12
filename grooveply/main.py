@@ -20,9 +20,10 @@ from grooveply.routers.employer import router as employer_router
 from grooveply.routers.goal import router as goal_router
 from grooveply.routers.job_board import router as job_board_router
 from grooveply.routers.location import router as location_router
+from grooveply.settings import VERSION
 from grooveply.utils import page
 
-app = FastAPI(debug=True)
+app = FastAPI(debug=True, version=VERSION)
 
 create_tables()
 apply_migrations()
