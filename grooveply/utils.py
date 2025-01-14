@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pendulum
 from fastui import AnyComponent
 from fastui import components as c
@@ -56,3 +58,12 @@ def page(title, components: list[AnyComponent]) -> list[AnyComponent]:
         ),
         c.Page(components=components),
     ]
+
+
+def crop_text(text: Optional[str], limit: int) -> Optional[str]:
+    if text is None:
+        return text
+
+    if len(text) > limit:
+        return text[: limit - 3] + "..."
+    return text

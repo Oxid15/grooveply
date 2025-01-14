@@ -16,7 +16,7 @@ from ..apis.employer import EmployerAPI
 from ..db import register_update
 from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
-from ..utils import format_date, page
+from ..utils import crop_text, format_date, page
 
 
 class ApplicationForm(BaseModel):
@@ -371,15 +371,6 @@ def application_updates(id) -> list[AnyComponent]:
 
 class FilterForm(BaseModel):
     status: ApplicationStatusName
-
-
-def crop_text(text: Optional[str], limit: int) -> Optional[str]:
-    if text is None:
-        return text
-
-    if len(text) > limit:
-        return text[: limit - 3] + "..."
-    return text
 
 
 @router.get("/", response_model=FastUI, response_model_exclude_none=True)
