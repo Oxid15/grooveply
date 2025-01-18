@@ -88,9 +88,12 @@ def application_create(form: Annotated[ApplicationForm, fastui_form(ApplicationF
     else:
         job_board_id = None
 
-    ApplicationAPI.create(
+    new_id = ApplicationAPI.create(
         employer_id, status_id, location_id, job_board_id, form.description, form.url
     )
+
+    register_update(new_id, "Created", "user", 1)
+
     return [c.FireEvent(event=GoToEvent(url="/application/"))]
 
 
