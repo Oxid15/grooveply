@@ -23,7 +23,7 @@ router = APIRouter()
 @router.post("/create", response_model=FastUI, response_model_exclude_none=True)
 def location_create(form: Annotated[LocationForm, fastui_form(LocationForm)]):
     LocationAPI.create(name=form.name)
-    return [c.FireEvent(event=GoToEvent(url="/location/"))]
+    return [c.FireEvent(event=BackEvent())]
 
 
 @router.get("/create-form", response_model=FastUI, response_model_exclude_none=True)
@@ -67,7 +67,9 @@ def applications() -> list[AnyComponent]:
     return page("Locations", components)
 
 
-@router.get('/search', response_model=SelectSearchResponse)
+@router.get("/search", response_model=SelectSearchResponse)
 async def search_view(request: Request, q: str) -> SelectSearchResponse:
     locations = LocationAPI.get_all()
-    return SelectSearchResponse(options=[{"value": loc.name, "label": loc.name} for loc in locations])
+    return SelectSearchResponse(
+        options=[{"value": loc.name, "label": loc.name} for loc in locations]
+    )

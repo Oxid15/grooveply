@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, create_model
 
 from ..apis.application import ApplicationAPI, ApplicationUpdateAPI
 from ..apis.employer import EmployerAPI
+from ..apis.location import LocationAPI
 from ..db import register_update
 from ..models import ApplicationStatusName
 from ..settings import DB_NAME, TZ
@@ -24,7 +25,12 @@ class ApplicationForm(BaseModel):
     app_status_name: ApplicationStatusName = "APPLIED"
     description: Annotated[str | None, Textarea(rows=5)] = Field(None)
     url: Optional[str] = None
-    location: Optional[str] = Field(None, json_schema_extra={"search_url": "/api/location/search"})
+    location: Optional[str] = Field(
+        None,
+        json_schema_extra={"search_url": "/api/location/search"},
+        description="If not found, enter name below",
+    )
+    new_location: Optional[str] = Field(None, title="Create location")
     job_board: Optional[str] = Field(
         None, json_schema_extra={"search_url": "/api/job_board/search"}
     )
@@ -68,7 +74,9 @@ def application_create(form: Annotated[ApplicationForm, fastui_form(ApplicationF
     cur.execute("SELECT id FROM application_status" " WHERE name = ?", (form.app_status_name,))
     status_id = cur.fetchall()[0][0]
 
-    if form.location is not None:
+    if form.new_location:
+        location_id = LocationAPI.create(form.new_location)
+    elif form.location:
         cur.execute("SELECT id FROM location WHERE name = ?", (form.location,))
         location_id = cur.fetchall()[0][0]
     else:
