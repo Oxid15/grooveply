@@ -40,6 +40,11 @@ def page(title, components: list[AnyComponent]) -> list[AnyComponent]:
                     active="startswith:/automation/",
                 ),
                 c.Link(
+                    components=[c.Text(text="Employers")],
+                    on_click=GoToEvent(url="/employer/"),
+                    active="startswith:/employer/",
+                ),
+                c.Link(
                     components=[c.Text(text="Locations")],
                     on_click=GoToEvent(url="/location/"),
                     active="startswith:/location/",

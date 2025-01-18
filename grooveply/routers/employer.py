@@ -24,6 +24,29 @@ class ApplicationRow(BaseModel):
     description: Optional[str] = None
 
 
+@router.get("/", response_model=FastUI, response_model_exclude_none=True)
+def employers() -> list[AnyComponent]:
+    emps = EmployerAPI.get_all()
+
+    cnt = EmployerAPI.get_total_count()
+
+    components = [c.Paragraph(text=f"{cnt} Employers Total")]
+
+    components.append(
+        c.Table(
+            data=emps,
+            columns=[
+                DisplayLookup(field="id", on_click=GoToEvent(url="/employer/{id}")),
+                DisplayLookup(field="name"),
+                DisplayLookup(field="application_count"),
+                DisplayLookup(field="latest_apply", mode=DisplayMode.date),
+            ],
+        )
+    )
+
+    return page("Employers", components)
+
+
 @router.get("/{id}", response_model=FastUI, response_model_exclude_none=True)
 def employer_page(id) -> list[AnyComponent]:
     employer_page = EmployerAPI.get_page(id)
